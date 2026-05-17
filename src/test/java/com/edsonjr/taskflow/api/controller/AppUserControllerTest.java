@@ -148,4 +148,15 @@ class AppUserControllerTest {
         verify(appUserService).findById(userId);
         verifyNoMoreInteractions(appUserService);
     }
+
+    @Test
+    void shouldReturnBadRequestWhenFindAppUserWithInvalidUuid() throws Exception {
+        mockMvc.perform(get("/usuarios/{id}", "invalid-uuid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Invalid request."));
+
+        verifyNoInteractions(appUserService);
+    }
 }

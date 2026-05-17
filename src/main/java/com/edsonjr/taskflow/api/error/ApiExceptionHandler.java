@@ -8,12 +8,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -23,6 +27,7 @@ public class ApiExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
     private static final String VALIDATION_ERROR_MESSAGE = "Validation failed.";
+    private static final String INVALID_REQUEST_MESSAGE = "Invalid request.";
     private static final String DATA_INTEGRITY_ERROR_MESSAGE = "Resource already exists or violates a unique constraint.";
     private static final String UNEXPECTED_ERROR_MESSAGE = "An unexpected error occurred.";
 
@@ -48,6 +53,21 @@ public class ApiExceptionHandler {
                 VALIDATION_ERROR_MESSAGE,
                 request.getRequestURI(),
                 fields
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiExceptionResponse> handleMethodArgumentTypeMismatchException(
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ApiExceptionResponse response = ApiExceptionResponse.of(
+                status,
+                INVALID_REQUEST_MESSAGE,
+                request.getRequestURI()
         );
 
         return ResponseEntity.status(status).body(response);
@@ -129,6 +149,10 @@ public class ApiExceptionHandler {
             Exception exception,
             HttpServletRequest request
     ) {
+        if (exception instanceof ErrorResponse errorResponse) {
+            return handleFrameworkErrorResponse(errorResponse, request);
+        }
+
         LOGGER.error(
                 "Unexpected error while processing request. method={}, path={}",
                 request.getMethod(),
@@ -145,5 +169,46 @@ public class ApiExceptionHandler {
         );
 
         return ResponseEntity.status(status).body(response);
+    }
+
+    private ResponseEntity<ApiExceptionResponse> handleFrameworkErrorResponse(
+            ErrorResponse errorResponse,
+            HttpServletRequest request
+    ) {
+        HttpStatusCode statusCode = errorResponse.getStatusCode();
+        HttpStatus status = HttpStatus.resolve(statusCode.value());
+
+        ApiExceptionResponse response = new ApiExceptionResponse(
+                LocalDateTime.now(),
+                statusCode.value(),
+                resolveReasonPhrase(statusCode),
+                resolveFrameworkMessage(status),
+                request.getRequestURI(),
+                List.of()
+        );
+
+        return ResponseEntity.status(statusCode).body(response);
+    }
+
+    private String resolveReasonPhrase(HttpStatusCode statusCode) {
+        HttpStatus status = HttpStatus.resolve(statusCode.value());
+
+        if (status == null) {
+            return "HTTP " + statusCode.value();
+        }
+
+        return status.getReasonPhrase();
+    }
+
+    private String resolveFrameworkMessage(HttpStatus status) {
+        if (status == null) {
+            return INVALID_REQUEST_MESSAGE;
+        }
+
+        if (status.is4xxClientError()) {
+            return INVALID_REQUEST_MESSAGE;
+        }
+
+        return UNEXPECTED_ERROR_MESSAGE;
     }
 }

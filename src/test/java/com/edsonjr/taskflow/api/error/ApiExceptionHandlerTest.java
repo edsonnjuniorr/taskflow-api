@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = TestErrorController.class)
@@ -130,6 +131,40 @@ class ApiExceptionHandlerTest {
                 .andExpect(jsonPath("$.message").value("An unexpected error occurred."))
                 .andExpect(jsonPath("$.message").value(not("Sensitive internal database failure.")))
                 .andExpect(jsonPath("$.path").value("/test/errors/unexpected"))
+                .andExpect(jsonPath("$.fields", hasSize(0)))
+                .andExpect(jsonPath("$", not(hasKey("trace"))))
+                .andExpect(jsonPath("$", not(hasKey("stackTrace"))))
+                .andExpect(jsonPath("$", not(hasKey("exception"))));
+    }
+
+    @Test
+    @DisplayName("Should preserve framework status when HTTP method is not supported")
+    void shouldPreserveFrameworkStatusWhenHttpMethodIsNotSupported() throws Exception {
+        mockMvc.perform(put("/test/errors/not-found"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(405))
+                .andExpect(jsonPath("$.error").value("Method Not Allowed"))
+                .andExpect(jsonPath("$.message").value("Invalid request."))
+                .andExpect(jsonPath("$.path").value("/test/errors/not-found"))
+                .andExpect(jsonPath("$.fields", hasSize(0)))
+                .andExpect(jsonPath("$", not(hasKey("trace"))))
+                .andExpect(jsonPath("$", not(hasKey("stackTrace"))))
+                .andExpect(jsonPath("$", not(hasKey("exception"))));
+    }
+
+    @Test
+    @DisplayName("Should preserve framework status when media type is not supported")
+    void shouldPreserveFrameworkStatusWhenMediaTypeIsNotSupported() throws Exception {
+        mockMvc.perform(post("/test/errors/validation")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content("invalid"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(415))
+                .andExpect(jsonPath("$.error").value("Unsupported Media Type"))
+                .andExpect(jsonPath("$.message").value("Invalid request."))
+                .andExpect(jsonPath("$.path").value("/test/errors/validation"))
                 .andExpect(jsonPath("$.fields", hasSize(0)))
                 .andExpect(jsonPath("$", not(hasKey("trace"))))
                 .andExpect(jsonPath("$", not(hasKey("stackTrace"))))
