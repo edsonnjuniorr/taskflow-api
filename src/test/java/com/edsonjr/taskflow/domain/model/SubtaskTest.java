@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow_api.domain;
+package com.edsonjr.taskflow.domain.model;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

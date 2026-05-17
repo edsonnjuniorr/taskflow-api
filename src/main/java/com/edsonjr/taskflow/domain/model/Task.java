@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow_api.domain;
+package com.edsonjr.taskflow.domain.model;
 
 import jakarta.persistence.*;
 
@@ -8,12 +8,12 @@ import java.util.UUID;
 
 @Entity
 @Table(
-        name = "subtasks",
+        name = "tasks",
         indexes = {
-                @Index(name = "idx_subtasks_task_id", columnList = "task_id")
+                @Index(name = "idx_tasks_user_id", columnList = "user_id")
         }
 )
-public class Subtask {
+public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,25 +38,25 @@ public class Subtask {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name = "task_id",
+            name = "user_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_subtasks_task_id")
+            foreignKey = @ForeignKey(name = "fk_tasks_user_id")
     )
-    private Task task;
+    private AppUser user;
 
-    protected Subtask() {
+    protected Task() {
     }
 
-    private Subtask(String title, String description, Task task) {
+    private Task(String title, String description, AppUser user) {
         this.title = requireNonBlank(title, "title");
         this.description = normalizeOptionalText(description);
         this.status = TaskStatus.PENDING;
         this.createdAt = Instant.now();
-        this.task = Objects.requireNonNull(task, "task is required");
+        this.user = Objects.requireNonNull(user, "user is required");
     }
 
-    public static Subtask create(String title, String description, Task task) {
-        return new Subtask(title, description, task);
+    public static Task create(String title, String description, AppUser user) {
+        return new Task(title, description, user);
     }
 
     public UUID getId() {
@@ -83,8 +83,8 @@ public class Subtask {
         return completedAt;
     }
 
-    public Task getTask() {
-        return task;
+    public AppUser getUser() {
+        return user;
     }
 
     private static String requireNonBlank(String value, String fieldName) {
