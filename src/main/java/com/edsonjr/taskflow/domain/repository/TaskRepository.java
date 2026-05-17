@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow.repository;
+package com.edsonjr.taskflow.domain.repository;
 
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
