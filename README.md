@@ -146,8 +146,12 @@ The current test suite validates:
 * NotFoundException when user does not exist
 * HTTP 201 Created when creating a valid user
 * HTTP 400 Bad Request for invalid payload
+* HTTP 400 Bad Request for malformed JSON
+* HTTP 400 Bad Request for invalid UUID path variables
 * HTTP 409 Conflict for duplicated email
 * HTTP 404 Not Found when user does not exist
+* HTTP 405 Method Not Allowed for unsupported HTTP methods
+* HTTP 415 Unsupported Media Type for unsupported request content types
 * Standardized API error response structure
 * Field-level validation errors
 * Global exception handling with RestControllerAdvice
@@ -161,7 +165,7 @@ Some persistence tests use Testcontainers with PostgreSQL to validate the real d
 
 ## Error response format
 
-The API uses a standardized error response for validation, business and unexpected errors.
+The API uses a standardized error response for validation, framework client errors, business and unexpected errors.
 
 Example:
 
@@ -200,9 +204,11 @@ The API does not expose stack traces, exception class names or internal implemen
 
 | Status | Meaning |
 |--------|---------|
-| 400 Bad Request | Invalid request payload or Bean Validation error |
+| 400 Bad Request | Invalid request payload, malformed JSON, invalid path variable or Bean Validation error |
 | 404 Not Found | Requested resource was not found |
+| 405 Method Not Allowed | HTTP method is not supported for the endpoint |
 | 409 Conflict | Business conflict or unique constraint violation |
+| 415 Unsupported Media Type | Request content type is not supported |
 | 422 Unprocessable Content | Business rule violation |
 | 500 Internal Server Error | Unexpected error with generic safe message |
 
@@ -335,6 +341,12 @@ User not found:
 
 ```
 404 Not Found
+```
+
+Invalid UUID:
+
+``` HTTP
+400 Bad Request
 ```
 
 ------------------------
