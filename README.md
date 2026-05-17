@@ -22,7 +22,17 @@ Initial project setup with:
 - UUID-based identifiers
 - JPA/Hibernate mappings
 - Database constraints for required fields, unique email and foreign keys
-- Automated tests for domain validation and persistence
+- Bean Validation for request payloads
+- AppUser feature:
+  - Create user
+  - Find user by ID
+  - Prevent duplicated email creation
+  - Return 404 when user does not exist
+- Automated tests for:
+  - Domain validation
+  - Persistence
+  - Service business rules
+  - Controller behavior with MockMvc
 
 ## Requirements
 
@@ -118,14 +128,22 @@ On Windows:
 
 The current test suite validates:
 
-Domain object creation
-Required field validation
-Email format validation
-Entity persistence
-UUID generation
-Database constraints
-Foreign key constraints
-Unique email constraint
+* Domain object creation
+* Required field validation
+* Email format validation
+* Entity persistence
+* UUID generation
+* Database constraints
+* Foreign key constraints
+* Unique email constraint
+* User creation service rule
+* Duplicated email prevention
+* User search by existing ID
+* NotFoundException when user does not exist
+* HTTP 201 Created when creating a valid user
+* HTTP 400 Bad Request for invalid payload
+* HTTP 409 Conflict for duplicated email
+* HTTP 404 Not Found when user does not exist
 
 Some persistence tests use Testcontainers with PostgreSQL to validate the real database behavior.
 
@@ -155,6 +173,83 @@ With constraints for:
 - Foreign key from tasks.user_id to app_users.id
 - Foreign key from subtasks.task_id to tasks.id
 - Valid task status values
+
+------------------------
+
+## API endpoints
+
+<h3>Users</h3>
+
+Create user
+
+``` HTTP
+POST /usuarios
+```
+
+Request body:
+
+```
+{
+  "name": "John Doe",
+  "email": "john.doe@email.com"
+}
+```
+
+Successful response:
+
+``` HTTP
+201 Created
+```
+
+JSON:
+
+```
+{
+  "id": "b1ef8ab6-4be9-4487-8744-e1bedc43988c",
+  "name": "John Doe",
+  "email": "john.doe@email.com"
+}
+```
+
+Validation errors:
+
+``` HTTP
+400 Bad Request
+```
+
+Duplicated email:
+
+``` HTTP
+409 Conflict
+```
+
+<h3>Find user by ID</h3>
+
+``` HTTP
+GET /usuarios/{id}
+```
+
+Successful response:
+
+``` HTTP
+200 OK
+```
+
+JSON:
+
+``` JSON
+{
+  "id": "b1ef8ab6-4be9-4487-8744-e1bedc43988c",
+  "name": "John Doe",
+  "email": "john.doe@email.com"
+}
+```
+
+User not found:
+
+```
+404 Not Found
+```
 
 ------------------------
 
@@ -241,13 +336,17 @@ COMPLETED
 
 * Java 17
 * Spring Boot
+* Spring Web MVC
 * Spring Data JPA
 * Hibernate
 * PostgreSQL
 * Flyway
 * Docker Compose
 * JUnit 5
+* Mockito
 * AssertJ
+* MockMvc
 * Testcontainers
 * Bean Validation
+* JaCoCo
 
