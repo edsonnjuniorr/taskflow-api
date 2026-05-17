@@ -1,6 +1,6 @@
 package com.edsonjr.taskflow.api.controller;
 
-import com.edsonjr.taskflow.api.exception.GlobalExceptionHandler;
+import com.edsonjr.taskflow.api.error.ApiExceptionHandler;
 import com.edsonjr.taskflow.api.mapper.AppUserMapper;
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.service.AppUserService;
@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.hamcrest.Matchers.hasItem;
 
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AppUserController.class)
 @Import({
         AppUserMapper.class,
-        GlobalExceptionHandler.class
+        ApiExceptionHandler.class
 })
 class AppUserControllerTest {
 
@@ -81,8 +82,9 @@ class AppUserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.fields.name").exists())
-                .andExpect(jsonPath("$.fields.email").exists());
+                .andExpect(jsonPath("$.fields").isArray())
+                .andExpect(jsonPath("$.fields[*].field").value(hasItem("name")))
+                .andExpect(jsonPath("$.fields[*].field").value(hasItem("email")));
 
         verifyNoInteractions(appUserService);
     }
@@ -145,5 +147,16 @@ class AppUserControllerTest {
 
         verify(appUserService).findById(userId);
         verifyNoMoreInteractions(appUserService);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenFindAppUserWithInvalidUuid() throws Exception {
+        mockMvc.perform(get("/usuarios/{id}", "invalid-uuid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Invalid request."));
+
+        verifyNoInteractions(appUserService);
     }
 }
