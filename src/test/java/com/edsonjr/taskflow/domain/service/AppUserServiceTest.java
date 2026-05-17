@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
@@ -35,7 +36,7 @@ class AppUserServiceTest {
         when(appUserRepository.existsByEmailIgnoreCase("john.doe@email.com"))
                 .thenReturn(false);
 
-        when(appUserRepository.save(any(AppUser.class)))
+        when(appUserRepository.saveAndFlush(any(AppUser.class)))
                 .thenAnswer(invocation -> {
                     AppUser appUser = invocation.getArgument(0);
                     ReflectionTestUtils.setField(appUser, "id", userId);
@@ -49,7 +50,7 @@ class AppUserServiceTest {
         assertThat(createdUser.getEmail()).isEqualTo("john.doe@email.com");
 
         ArgumentCaptor<AppUser> appUserCaptor = ArgumentCaptor.forClass(AppUser.class);
-        verify(appUserRepository).save(appUserCaptor.capture());
+        verify(appUserRepository).saveAndFlush(appUserCaptor.capture());
 
         AppUser savedUser = appUserCaptor.getValue();
 
@@ -70,7 +71,24 @@ class AppUserServiceTest {
                 .hasMessage("Unable to create user with provided data.");
 
         verify(appUserRepository).existsByEmailIgnoreCase("john.doe@email.com");
-        verify(appUserRepository, never()).save(any(AppUser.class));
+        verify(appUserRepository, never()).saveAndFlush(any(AppUser.class));
+        verifyNoMoreInteractions(appUserRepository);
+    }
+
+    @Test
+    void shouldThrowEmailAlreadyExistsExceptionWhenDatabaseUniqueConstraintIsViolatedOnSave() {
+        when(appUserRepository.existsByEmailIgnoreCase("john.doe@email.com"))
+                .thenReturn(false);
+
+        when(appUserRepository.saveAndFlush(any(AppUser.class)))
+                .thenThrow(new DataIntegrityViolationException("Unique constraint violation"));
+
+        assertThatThrownBy(() -> appUserService.create("John Doe", "john.doe@email.com"))
+                .isInstanceOf(EmailAlreadyExistsException.class)
+                .hasMessage("Email already exists.");
+
+        verify(appUserRepository).existsByEmailIgnoreCase("john.doe@email.com");
+        verify(appUserRepository).saveAndFlush(any(AppUser.class));
         verifyNoMoreInteractions(appUserRepository);
     }
 
