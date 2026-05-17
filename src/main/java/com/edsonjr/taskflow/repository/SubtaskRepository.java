@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface SubTaskRepository extends JpaRepository<Subtask, UUID> {
+public interface SubtaskRepository extends JpaRepository<Subtask, UUID> {
 
     List<Subtask> findByTask_Id(UUID taskId);
 
