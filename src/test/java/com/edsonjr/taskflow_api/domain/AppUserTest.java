@@ -47,6 +47,13 @@ class AppUserTest {
     }
 
     @Test
+    void shouldNormalizeEmailToLowerCase() {
+        AppUser user = AppUser.create("John Doe", "John.Doe@Example.COM");
+
+        assertThat(user.getEmail()).isEqualTo("john.doe@example.com");
+    }
+
+    @Test
     void shouldFailWhenNameIsNull() {
         assertThatThrownBy(() -> AppUser.create(null, "john.doe@example.com"))
                 .isInstanceOf(NullPointerException.class)

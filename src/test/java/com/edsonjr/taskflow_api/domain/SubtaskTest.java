@@ -1,8 +1,8 @@
 package com.edsonjr.taskflow_api.domain;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SubtaskTest {
@@ -12,15 +12,15 @@ class SubtaskTest {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
         Task task = Task.create("Create API", "Build domain model", user);
 
-        Subtask subtask = Subtask.create("Create entity", "Implement Subtask entity", task);
+        Subtask subtaskTest = Subtask.create("Create entity", "Implement Subtask entity", task);
 
-        assertThat(subtask.getId()).isNull();
-        assertThat(subtask.getTitle()).isEqualTo("Create entity");
-        assertThat(subtask.getDescription()).isEqualTo("Implement Subtask entity");
-        assertThat(subtask.getStatus()).isEqualTo(TaskStatus.PENDING);
-        assertThat(subtask.getCreatedAt()).isNotNull();
-        assertThat(subtask.getCompletedAt()).isNull();
-        assertThat(subtask.getTask()).isEqualTo(task);
+        Assertions.assertThat(subtaskTest.getId()).isNull();
+        Assertions.assertThat(subtaskTest.getTitle()).isEqualTo("Create entity");
+        Assertions.assertThat(subtaskTest.getDescription()).isEqualTo("Implement Subtask entity");
+        Assertions.assertThat(subtaskTest.getStatus()).isEqualTo(TaskStatus.PENDING);
+        Assertions.assertThat(subtaskTest.getCreatedAt()).isNotNull();
+        Assertions.assertThat(subtaskTest.getCompletedAt()).isNull();
+        Assertions.assertThat(subtaskTest.getTask()).isEqualTo(task);
     }
 
     @Test
@@ -28,10 +28,10 @@ class SubtaskTest {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
         Task task = Task.create("Create API", "Build domain model", user);
 
-        Subtask subtask = Subtask.create("  Create entity  ", "  Implement Subtask entity  ", task);
+        Subtask subtaskTest = Subtask.create("  Create entity  ", "  Implement Subtask entity  ", task);
 
-        assertThat(subtask.getTitle()).isEqualTo("Create entity");
-        assertThat(subtask.getDescription()).isEqualTo("Implement Subtask entity");
+        Assertions.assertThat(subtaskTest.getTitle()).isEqualTo("Create entity");
+        Assertions.assertThat(subtaskTest.getDescription()).isEqualTo("Implement Subtask entity");
     }
 
     @Test
@@ -39,9 +39,9 @@ class SubtaskTest {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
         Task task = Task.create("Create API", "Build domain model", user);
 
-        Subtask subtask = Subtask.create("Create entity", null, task);
+        Subtask subtaskTest = Subtask.create("Create entity", null, task);
 
-        assertThat(subtask.getDescription()).isNull();
+        Assertions.assertThat(subtaskTest.getDescription()).isNull();
     }
 
     @Test
@@ -49,9 +49,9 @@ class SubtaskTest {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
         Task task = Task.create("Create API", "Build domain model", user);
 
-        Subtask subtask = Subtask.create("Create entity", "   ", task);
+        Subtask subtaskTest = Subtask.create("Create entity", "   ", task);
 
-        assertThat(subtask.getDescription()).isNull();
+        Assertions.assertThat(subtaskTest.getDescription()).isNull();
     }
 
     @Test

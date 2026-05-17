@@ -10,6 +10,7 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -41,7 +42,7 @@ public class AppUser {
 
     private AppUser(String name, String email) {
         this.name = requireNonBlank(name, "name");
-        this.email = requireNonBlank(email, "email").toLowerCase();
+        this.email = requireNonBlank(email, "email").toLowerCase(Locale.ROOT);
     }
 
     public static AppUser create(String name, String email) {

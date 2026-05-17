@@ -1,6 +1,6 @@
 # taskflow-api
 
-RESTful API for internal task and subtask management.
+RESTful API for internal task and subtaskTest management.
 
 This project is being built with Java 17, Spring Boot and PostgreSQL, following a layered architecture and good practices for maintainability, validation, database migrations and automated testing.
 

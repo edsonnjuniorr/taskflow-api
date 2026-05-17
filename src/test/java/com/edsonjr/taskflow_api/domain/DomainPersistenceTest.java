@@ -51,19 +51,19 @@ class DomainPersistenceTest {
         Task task = Task.create("Create API", "Build domain model", user);
         entityManager.persist(task);
 
-        Subtask subtask = Subtask.create("Create entities", "Implement JPA entities", task);
-        entityManager.persist(subtask);
+        Subtask subtaskTest = Subtask.create("Create entities", "Implement JPA entities", task);
+        entityManager.persist(subtaskTest);
 
         entityManager.flush();
 
         assertThat(user.getId()).isNotNull();
         assertThat(task.getId()).isNotNull();
-        assertThat(subtask.getId()).isNotNull();
+        assertThat(subtaskTest.getId()).isNotNull();
 
         assertThat(task.getStatus()).isEqualTo(TaskStatus.PENDING);
-        assertThat(subtask.getStatus()).isEqualTo(TaskStatus.PENDING);
+        assertThat(subtaskTest.getStatus()).isEqualTo(TaskStatus.PENDING);
         assertThat(task.getCreatedAt()).isNotNull();
-        assertThat(subtask.getCreatedAt()).isNotNull();
+        assertThat(subtaskTest.getCreatedAt()).isNotNull();
     }
 
     @Test
@@ -104,11 +104,11 @@ class DomainPersistenceTest {
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtask = Subtask.create("Subtask without task", null, task);
-        ReflectionTestUtils.setField(subtask, "task", null);
+        Subtask subtaskTest = Subtask.create("Subtask without task", null, task);
+        ReflectionTestUtils.setField(subtaskTest, "task", null);
 
         assertPersistenceFailure(() -> {
-            entityManager.persist(subtask);
+            entityManager.persist(subtaskTest);
             entityManager.flush();
         });
     }
@@ -189,11 +189,11 @@ class DomainPersistenceTest {
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtask = Subtask.create("Subtask title", null, task);
-        ReflectionTestUtils.setField(subtask, "title", null);
+        Subtask subtaskTest = Subtask.create("Subtask title", null, task);
+        ReflectionTestUtils.setField(subtaskTest, "title", null);
 
         assertPersistenceFailure(() -> {
-            entityManager.persist(subtask);
+            entityManager.persist(subtaskTest);
             entityManager.flush();
         });
     }
@@ -207,11 +207,11 @@ class DomainPersistenceTest {
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtask = Subtask.create("Subtask status", null, task);
-        ReflectionTestUtils.setField(subtask, "status", null);
+        Subtask subtaskTest = Subtask.create("Subtask status", null, task);
+        ReflectionTestUtils.setField(subtaskTest, "status", null);
 
         assertPersistenceFailure(() -> {
-            entityManager.persist(subtask);
+            entityManager.persist(subtaskTest);
             entityManager.flush();
         });
     }
@@ -225,11 +225,11 @@ class DomainPersistenceTest {
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtask = Subtask.create("Subtask created at", null, task);
-        ReflectionTestUtils.setField(subtask, "createdAt", null);
+        Subtask subtaskTest = Subtask.create("Subtask created at", null, task);
+        ReflectionTestUtils.setField(subtaskTest, "createdAt", null);
 
         assertPersistenceFailure(() -> {
-            entityManager.persist(subtask);
+            entityManager.persist(subtaskTest);
             entityManager.flush();
         });
     }

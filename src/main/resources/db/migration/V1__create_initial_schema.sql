@@ -28,3 +28,7 @@ CREATE TABLE subtasks (
                           CONSTRAINT fk_subtasks_task_id FOREIGN KEY (task_id) REFERENCES tasks (id),
                           CONSTRAINT ck_subtasks_status CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED'))
 );
+
+CREATE INDEX idx_tasks_user_id ON tasks (user_id);
+
+CREATE INDEX idx_subtasks_task_id ON subtasks (task_id);
