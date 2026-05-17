@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -60,6 +61,21 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiExceptionResponse> handleMethodArgumentTypeMismatchException(
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ApiExceptionResponse response = ApiExceptionResponse.of(
+                status,
+                INVALID_REQUEST_MESSAGE,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiExceptionResponse> handleHttpMessageNotReadableException(
             HttpServletRequest request
     ) {
         HttpStatus status = HttpStatus.BAD_REQUEST;

@@ -138,6 +138,24 @@ class ApiExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("Should preserve framework status when JSON request body is malformed")
+    void shouldPreserveFrameworkStatusWhenJsonRequestBodyIsMalformed() throws Exception {
+        mockMvc.perform(post("/test/errors/validation")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Invalid request."))
+                .andExpect(jsonPath("$.path").value("/test/errors/validation"))
+                .andExpect(jsonPath("$.fields", hasSize(0)))
+                .andExpect(jsonPath("$", not(hasKey("trace"))))
+                .andExpect(jsonPath("$", not(hasKey("stackTrace"))))
+                .andExpect(jsonPath("$", not(hasKey("exception"))));
+    }
+
+    @Test
     @DisplayName("Should preserve framework status when HTTP method is not supported")
     void shouldPreserveFrameworkStatusWhenHttpMethodIsNotSupported() throws Exception {
         mockMvc.perform(put("/test/errors/not-found"))
