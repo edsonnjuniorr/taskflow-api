@@ -1,6 +1,6 @@
 # taskflow-api
 
-RESTful API for internal task and subtaskTest management.
+RESTful API for internal task and subtask management.
 
 This project is being built with Java 17, Spring Boot and PostgreSQL, following a layered architecture and good practices for maintainability, validation, database migrations and automated testing.
 
@@ -23,6 +23,10 @@ Initial project setup with:
 - JPA/Hibernate mappings
 - Database constraints for required fields, unique email and foreign keys
 - Bean Validation for request payloads
+- Standardized global API error handling
+- Consistent error response structure
+- Field-level validation error responses
+- Safe 500 responses without stack trace exposure
 - AppUser feature:
   - Create user
   - Find user by ID
@@ -144,8 +148,63 @@ The current test suite validates:
 * HTTP 400 Bad Request for invalid payload
 * HTTP 409 Conflict for duplicated email
 * HTTP 404 Not Found when user does not exist
+* Standardized API error response structure
+* Field-level validation errors
+* Global exception handling with RestControllerAdvice
+* HTTP 422 Unprocessable Content for business rule violations
+* HTTP 500 Internal Server Error with generic message
+* No stack trace exposure in API error responses
 
 Some persistence tests use Testcontainers with PostgreSQL to validate the real database behavior.
+
+------------------------
+
+## Error response format
+
+The API uses a standardized error response for validation, business and unexpected errors.
+
+Example:
+
+```json
+{
+  "timestamp": "2026-05-17T19:30:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Validation failed.",
+  "path": "/usuarios",
+  "fields": [
+    {
+      "field": "email",
+      "message": "Email must be valid."
+    }
+  ]
+}
+```
+
+Error response fields:
+
+```
+timestamp - date and time when the error occurred
+status - HTTP status code
+error - HTTP reason phrase
+message - safe error message
+path - request path
+fields - field-level validation errors, when applicable
+```
+
+The API does not expose stack traces, exception class names or internal implementation details in JSON error responses.
+
+------------------------
+
+### Error status codes
+
+| Status | Meaning |
+|--------|---------|
+| 400 Bad Request | Invalid request payload or Bean Validation error |
+| 404 Not Found | Requested resource was not found |
+| 409 Conflict | Business conflict or unique constraint violation |
+| 422 Unprocessable Content | Business rule violation |
+| 500 Internal Server Error | Unexpected error with generic safe message |
 
 ------------------------
 
@@ -211,16 +270,43 @@ JSON:
 }
 ```
 
-Validation errors:
+Validation error response:
 
 ``` HTTP
 400 Bad Request
 ```
 
-Duplicated email:
+```
+{
+  "timestamp": "2026-05-17T19:30:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Validation failed.",
+  "path": "/usuarios",
+  "fields": [
+    {
+      "field": "email",
+      "message": "Email must be valid."
+    }
+  ]
+}
+```
+
+Duplicated email response:
 
 ``` HTTP
 409 Conflict
+```
+
+```
+{
+"timestamp": "2026-05-17T19:30:00",
+"status": 409,
+"error": "Conflict",
+"message": "Unable to create user with provided data.",
+"path": "/usuarios",
+"fields": []
+}
 ```
 
 <h3>Find user by ID</h3>

@@ -85,7 +85,7 @@ class AppUserServiceTest {
 
         assertThatThrownBy(() -> appUserService.create("John Doe", "john.doe@email.com"))
                 .isInstanceOf(EmailAlreadyExistsException.class)
-                .hasMessage("Email already exists.");
+                .hasMessage("Unable to create user with provided data.");
 
         verify(appUserRepository).existsByEmailIgnoreCase("john.doe@email.com");
         verify(appUserRepository).saveAndFlush(any(AppUser.class));
