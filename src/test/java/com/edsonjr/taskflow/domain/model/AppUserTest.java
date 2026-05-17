@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow_api.domain;
+package com.edsonjr.taskflow.domain.model;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;

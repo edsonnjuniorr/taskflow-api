@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow_api.domain;
+package com.edsonjr.taskflow.domain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

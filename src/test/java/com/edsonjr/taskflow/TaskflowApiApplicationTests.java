@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow_api;
+package com.edsonjr.taskflow;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
