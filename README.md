@@ -27,11 +27,22 @@ Initial project setup with:
 - Consistent error response structure
 - Field-level validation error responses
 - Safe 500 responses without stack trace exposure
+- Preserved Spring MVC framework error statuses before fallback 500 handling
+- Internal logging for unexpected server errors
 - AppUser feature:
   - Create user
   - Find user by ID
   - Prevent duplicated email creation
   - Return 404 when user does not exist
+- Task feature:
+  - Create task
+  - List tasks
+  - Filter tasks by status and user
+  - Paginate task results
+  - Update task status
+  - Use PENDING as the default status when none is provided
+  - Set completedAt when a task is completed
+  - Clear completedAt when a completed task is reopened
 - Automated tests for:
   - Domain validation
   - Persistence
@@ -158,6 +169,14 @@ The current test suite validates:
 * HTTP 422 Unprocessable Content for business rule violations
 * HTTP 500 Internal Server Error with generic message
 * No stack trace exposure in API error responses
+* Regression coverage to ensure Spring MVC client errors are not converted to 500
+* Preservation of framework HTTP statuses in the global exception handler
+* Task creation and listing
+* Task filtering by status and user
+* Task status update through PATCH /tasks/{id}/status
+* UpdateTaskStatusRequest validation
+* Task status transitions in the domain model
+* TaskService status update business rules
 
 Some persistence tests use Testcontainers with PostgreSQL to validate the real database behavior.
 
@@ -165,7 +184,7 @@ Some persistence tests use Testcontainers with PostgreSQL to validate the real d
 
 ## Error response format
 
-The API uses a standardized error response for validation, framework client errors, business and unexpected errors.
+The API uses a standardized error response for validation errors, Spring MVC framework errors, business errors and unexpected server errors.
 
 Example:
 
@@ -175,7 +194,7 @@ Example:
   "status": 400,
   "error": "Bad Request",
   "message": "Validation failed.",
-  "path": "/usuarios",
+  "path": "/users",
   "fields": [
     {
       "field": "email",
@@ -214,17 +233,32 @@ The API does not expose stack traces, exception class names or internal implemen
 
 ------------------------
 
+## Error logging
+
+Unexpected server errors are logged internally with stack trace for diagnostics.
+
+The API response remains safe and does not expose stack traces, exception class names or internal implementation details to clients.
+
+By default, Spring Boot writes logs to the application console/stdout. When running with Docker, logs can be inspected with:
+
+```bash
+docker compose logs -f
+```
+
+------------------------
+
 ## Database migrations
 
 Database schema changes are managed by Flyway.
 
-Current migration:
+Current migrations:
 
 ```bash
 src/main/resources/db/migration/V1__create_initial_schema.sql
+src/main/resources/db/migration/V2__add_task_filter_indexes.sql
 ```
 
-This migration creates the following tables:
+The first migration creates the following tables:
 
 - app_users
 - tasks
@@ -239,6 +273,8 @@ With constraints for:
 - Foreign key from subtasks.task_id to tasks.id
 - Valid task status values
 
+The second migration adds indexes to improve task filtering by user and status.
+
 ------------------------
 
 ## API endpoints
@@ -248,7 +284,7 @@ With constraints for:
 Create user
 
 ``` HTTP
-POST /usuarios
+POST /users
 ```
 
 Request body:
@@ -288,7 +324,7 @@ Validation error response:
   "status": 400,
   "error": "Bad Request",
   "message": "Validation failed.",
-  "path": "/usuarios",
+  "path": "/users",
   "fields": [
     {
       "field": "email",
@@ -310,7 +346,7 @@ Duplicated email response:
 "status": 409,
 "error": "Conflict",
 "message": "Unable to create user with provided data.",
-"path": "/usuarios",
+"path": "/users",
 "fields": []
 }
 ```
@@ -318,7 +354,7 @@ Duplicated email response:
 <h3>Find user by ID</h3>
 
 ``` HTTP
-GET /usuarios/{id}
+GET /users/{id}
 ```
 
 Successful response:
@@ -347,6 +383,164 @@ Invalid UUID:
 
 ``` HTTP
 400 Bad Request
+```
+
+<h3>Tasks</h3>
+
+Create task
+
+``` HTTP
+POST /tasks
+```
+
+Request body:
+
+``` JSON
+{
+  "title": "Implement task creation",
+  "description": "Create POST /tasks endpoint",
+  "userId": "b1ef8ab6-4be9-4487-8744-e1bedc43988c",
+  "status": "IN_PROGRESS"
+}
+```
+
+The `status` field is optional. When omitted, the task is created with `PENDING`.
+
+Successful response:
+
+``` HTTP
+201 Created
+Location: /tasks/{id}
+```
+
+JSON:
+
+``` JSON
+{
+  "id": "cc7c20b3-723e-4b82-8491-3f95fd3eaf42",
+  "title": "Implement task creation",
+  "description": "Create POST /tasks endpoint",
+  "status": "IN_PROGRESS",
+  "createdAt": "2026-05-18T10:30:00Z",
+  "completedAt": null,
+  "userId": "b1ef8ab6-4be9-4487-8744-e1bedc43988c"
+}
+```
+
+Validation error response:
+
+``` HTTP
+400 Bad Request
+```
+
+User not found:
+
+``` HTTP
+404 Not Found
+```
+
+<h3>List tasks</h3>
+
+``` HTTP
+GET /tasks
+```
+
+Optional query parameters:
+
+```
+status - PENDING, IN_PROGRESS or COMPLETED
+userId - user UUID
+page - page number, starting at 0
+size - page size
+sort - sort expression
+```
+
+Example:
+
+``` HTTP
+GET /tasks?status=PENDING&userId=b1ef8ab6-4be9-4487-8744-e1bedc43988c&page=0&size=20
+```
+
+Successful response:
+
+``` HTTP
+200 OK
+```
+
+JSON:
+
+``` JSON
+{
+  "content": [
+    {
+      "id": "cc7c20b3-723e-4b82-8491-3f95fd3eaf42",
+      "title": "Implement task filters",
+      "description": null,
+      "status": "PENDING",
+      "createdAt": "2026-05-18T10:30:00Z",
+      "completedAt": null,
+      "userId": "b1ef8ab6-4be9-4487-8744-e1bedc43988c"
+    }
+  ],
+  "page": {
+    "size": 20,
+    "number": 0,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+```
+
+Invalid status filter:
+
+``` HTTP
+400 Bad Request
+```
+
+<h3>Update task status</h3>
+
+``` HTTP
+PATCH /tasks/{id}/status
+```
+
+Request body:
+
+``` JSON
+{
+  "status": "COMPLETED"
+}
+```
+
+Successful response:
+
+``` HTTP
+200 OK
+```
+
+JSON:
+
+``` JSON
+{
+  "id": "cc7c20b3-723e-4b82-8491-3f95fd3eaf42",
+  "title": "Implement task creation",
+  "description": "Create POST /tasks endpoint",
+  "status": "COMPLETED",
+  "createdAt": "2026-05-18T10:30:00Z",
+  "completedAt": "2026-05-18T11:00:00Z",
+  "userId": "b1ef8ab6-4be9-4487-8744-e1bedc43988c"
+}
+```
+
+Validation error response:
+
+``` HTTP
+400 Bad Request
+```
+
+Task not found:
+
+``` HTTP
+404 Not Found
 ```
 
 ------------------------
@@ -392,7 +586,10 @@ Rules:
 
 - title is required
 - status is required
+- status defaults to PENDING when omitted during creation
 - createdAt is required
+- completedAt is set when status is COMPLETED
+- completedAt is cleared when status changes back to PENDING or IN_PROGRESS
 - user is required
 
 <h3>Subtask</h3>

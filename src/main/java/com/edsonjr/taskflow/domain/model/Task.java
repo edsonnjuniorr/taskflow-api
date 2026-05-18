@@ -10,7 +10,9 @@ import java.util.UUID;
 @Table(
         name = "tasks",
         indexes = {
-                @Index(name = "idx_tasks_user_id", columnList = "user_id")
+                @Index(name = "idx_tasks_user_id", columnList = "user_id"),
+                @Index(name = "idx_tasks_status", columnList = "status"),
+                @Index(name = "idx_tasks_user_id_status", columnList = "user_id, status")
         }
 )
 public class Task {
@@ -47,16 +49,26 @@ public class Task {
     protected Task() {
     }
 
-    private Task(String title, String description, AppUser user) {
-        this.title = requireNonBlank(title, "title");
+    private Task(String title, String description, TaskStatus status, AppUser user) {
+        this.title = requireNonBlank(title);
         this.description = normalizeOptionalText(description);
-        this.status = TaskStatus.PENDING;
+        this.status = resolveStatus(status);
         this.createdAt = Instant.now();
+        this.completedAt = resolveCompletedAt(this.status, null);
         this.user = Objects.requireNonNull(user, "user is required");
     }
 
     public static Task create(String title, String description, AppUser user) {
-        return new Task(title, description, user);
+        return new Task(title, description, TaskStatus.PENDING, user);
+    }
+
+    public static Task create(String title, String description, TaskStatus status, AppUser user) {
+        return new Task(title, description, status, user);
+    }
+
+    public void updateStatus(TaskStatus status) {
+        this.status = Objects.requireNonNull(status, "status is required");
+        this.completedAt = resolveCompletedAt(this.status, this.completedAt);
     }
 
     public UUID getId() {
@@ -87,13 +99,29 @@ public class Task {
         return user;
     }
 
-    private static String requireNonBlank(String value, String fieldName) {
-        Objects.requireNonNull(value, fieldName + " is required");
+    private static TaskStatus resolveStatus(TaskStatus status) {
+        if (status == null) {
+            return TaskStatus.PENDING;
+        }
+
+        return status;
+    }
+
+    private static Instant resolveCompletedAt(TaskStatus status, Instant currentCompletedAt) {
+        if (status == TaskStatus.COMPLETED) {
+            return currentCompletedAt != null ? currentCompletedAt : Instant.now();
+        }
+
+        return null;
+    }
+
+    private static String requireNonBlank(String value) {
+        Objects.requireNonNull(value, "title" + " is required");
 
         String normalizedValue = value.trim();
 
         if (normalizedValue.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be blank");
+            throw new IllegalArgumentException("title" + " must not be blank");
         }
 
         return normalizedValue;

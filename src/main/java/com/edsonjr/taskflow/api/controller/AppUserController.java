@@ -13,7 +13,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/users")
 public class AppUserController {
 
     private final AppUserService appUserService;
@@ -34,7 +34,7 @@ public class AppUserController {
         AppUser createdUser = appUserService.create(request.name(), request.email());
         AppUserResponse response = appUserMapper.toResponse(createdUser);
 
-        URI location = URI.create("/usuarios/" + response.id());
+        URI location = URI.create("/users/" + response.id());
 
         return ResponseEntity.created(location).body(response);
     }

@@ -53,11 +53,11 @@ class AppUserControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/usuarios")
+        mockMvc.perform(post("/users")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "/usuarios/" + userId))
+                .andExpect(header().string("Location", "/users/" + userId))
                 .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.name").value("John Doe"))
                 .andExpect(jsonPath("$.email").value("john.doe@email.com"));
@@ -76,7 +76,7 @@ class AppUserControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/usuarios")
+        mockMvc.perform(post("/users")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isBadRequest())
@@ -101,7 +101,7 @@ class AppUserControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/usuarios")
+        mockMvc.perform(post("/users")
                         .contentType(APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isConflict())
@@ -122,7 +122,7 @@ class AppUserControllerTest {
 
         when(appUserService.findById(userId)).thenReturn(appUser);
 
-        mockMvc.perform(get("/usuarios/{id}", userId))
+        mockMvc.perform(get("/users/{id}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.name").value("John Doe"))
@@ -139,7 +139,7 @@ class AppUserControllerTest {
         when(appUserService.findById(userId))
                 .thenThrow(new NotFoundException("User not found."));
 
-        mockMvc.perform(get("/usuarios/{id}", userId))
+        mockMvc.perform(get("/users/{id}", userId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))
@@ -151,7 +151,7 @@ class AppUserControllerTest {
 
     @Test
     void shouldReturnBadRequestWhenFindAppUserWithInvalidUuid() throws Exception {
-        mockMvc.perform(get("/usuarios/{id}", "invalid-uuid"))
+        mockMvc.perform(get("/users/{id}", "invalid-uuid"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.error").value("Bad Request"))
