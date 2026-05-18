@@ -190,6 +190,38 @@ class ApiExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("Should preserve framework 5xx status with generic unexpected message")
+    void shouldPreserveFramework5xxStatusWithGenericUnexpectedMessage() throws Exception {
+        mockMvc.perform(get("/test/errors/framework-service-unavailable"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(503))
+                .andExpect(jsonPath("$.error").value("Service Unavailable"))
+                .andExpect(jsonPath("$.message").value("An unexpected error occurred."))
+                .andExpect(jsonPath("$.path").value("/test/errors/framework-service-unavailable"))
+                .andExpect(jsonPath("$.fields", hasSize(0)))
+                .andExpect(jsonPath("$", not(hasKey("trace"))))
+                .andExpect(jsonPath("$", not(hasKey("stackTrace"))))
+                .andExpect(jsonPath("$", not(hasKey("exception"))));
+    }
+
+    @Test
+    @DisplayName("Should preserve framework non standard HTTP status")
+    void shouldPreserveFrameworkNonStandardHttpStatus() throws Exception {
+        mockMvc.perform(get("/test/errors/framework-unknown-status"))
+                .andExpect(status().is(599))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(599))
+                .andExpect(jsonPath("$.error").value("HTTP 599"))
+                .andExpect(jsonPath("$.message").value("An unexpected error occurred."))
+                .andExpect(jsonPath("$.path").value("/test/errors/framework-unknown-status"))
+                .andExpect(jsonPath("$.fields", hasSize(0)))
+                .andExpect(jsonPath("$", not(hasKey("trace"))))
+                .andExpect(jsonPath("$", not(hasKey("stackTrace"))))
+                .andExpect(jsonPath("$", not(hasKey("exception"))));
+    }
+
+    @Test
     @DisplayName("Should return 200 when validation request is valid")
     void shouldReturnOkWhenValidationRequestIsValid() throws Exception {
         String body = """

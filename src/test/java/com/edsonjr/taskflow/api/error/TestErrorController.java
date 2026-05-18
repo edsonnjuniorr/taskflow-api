@@ -7,6 +7,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,6 +43,16 @@ class TestErrorController {
     @GetMapping("/unexpected")
     void throwUnexpectedException() {
         throw new IllegalStateException("Sensitive internal database failure.");
+    }
+
+    @GetMapping("/framework-service-unavailable")
+    void throwFrameworkServiceUnavailableException() {
+        throw new ErrorResponseException(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @GetMapping("/framework-unknown-status")
+    void throwFrameworkUnknownStatusException() {
+        throw new ErrorResponseException(HttpStatusCode.valueOf(599));
     }
 
     record TestValidationRequest(
