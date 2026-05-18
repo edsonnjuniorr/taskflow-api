@@ -192,7 +192,6 @@ public class ApiExceptionHandler {
             HttpServletRequest request
     ) {
         HttpStatusCode statusCode = errorResponse.getStatusCode();
-        HttpStatus status = HttpStatus.resolve(statusCode.value());
 
         ApiExceptionResponse response = new ApiExceptionResponse(
                 LocalDateTime.now(),
