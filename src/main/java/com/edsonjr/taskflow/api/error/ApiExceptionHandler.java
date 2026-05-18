@@ -198,7 +198,7 @@ public class ApiExceptionHandler {
                 LocalDateTime.now(),
                 statusCode.value(),
                 resolveReasonPhrase(statusCode),
-                resolveFrameworkMessage(status),
+                resolveFrameworkMessage(statusCode),
                 request.getRequestURI(),
                 List.of()
         );
@@ -216,12 +216,8 @@ public class ApiExceptionHandler {
         return status.getReasonPhrase();
     }
 
-    private String resolveFrameworkMessage(HttpStatus status) {
-        if (status == null) {
-            return INVALID_REQUEST_MESSAGE;
-        }
-
-        if (status.is4xxClientError()) {
+    private String resolveFrameworkMessage(HttpStatusCode statusCode) {
+        if (statusCode.is4xxClientError()) {
             return INVALID_REQUEST_MESSAGE;
         }
 
