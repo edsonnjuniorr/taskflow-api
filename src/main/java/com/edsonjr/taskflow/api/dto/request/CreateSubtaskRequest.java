@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Size;
 
 public record CreateSubtaskRequest(
 
-        @NotBlank(message = "title must not be blank")
-        @Size(max = 160, message = "title must be at most 160 characters")
+        @NotBlank(message = "Title is required.")
+        @Size(max = 160, message = "Title must have at most 160 characters.")
         String title,
 
-        @Size(max = 1000, message = "description must be at most 1000 characters")
+        @Size(max = 1000, message = "Description must have at most 1000 characters.")
         String description,
 
         TaskStatus status

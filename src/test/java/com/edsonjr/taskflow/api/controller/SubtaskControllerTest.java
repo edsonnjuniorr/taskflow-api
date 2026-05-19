@@ -70,7 +70,7 @@ class SubtaskControllerTest extends PostgreSQLIntegrationTest {
 
         mockMvc.perform(post("/tasks/{id}/subtasks", task.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody))
+                        .content(requestBody))
                 .andExpect(status().isCreated())
                 .andExpect(header().doesNotExist("Location"))
                 .andExpect(jsonPath("$.id").exists())
