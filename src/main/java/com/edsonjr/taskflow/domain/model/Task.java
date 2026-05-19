@@ -121,7 +121,7 @@ public class Task {
         String normalizedValue = value.trim();
 
         if (normalizedValue.isBlank()) {
-            throw new IllegalArgumentException("title" + " must not be blank");
+            throw new IllegalArgumentException("title must not be blank");
         }
 
         return normalizedValue;

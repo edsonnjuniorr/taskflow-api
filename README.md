@@ -43,6 +43,16 @@ Initial project setup with:
   - Use PENDING as the default status when none is provided
   - Set completedAt when a task is completed
   - Clear completedAt when a completed task is reopened
+  - Prevent task completion while subtasks are unfinished
+- Subtask feature:
+  - Create subtask for a task
+  - List subtasks from a task
+  - Paginate subtask results
+  - Update subtask status
+  - Use PENDING as the default status when none is provided
+  - Set completedAt when a subtask is completed
+  - Clear completedAt when a completed subtask is reopened
+  - Prevent completed tasks from having unfinished subtasks
 - Automated tests for:
   - Domain validation
   - Persistence
@@ -177,6 +187,11 @@ The current test suite validates:
 * UpdateTaskStatusRequest validation
 * Task status transitions in the domain model
 * TaskService status update business rules
+* Subtask creation and listing
+* Subtask pagination
+* Subtask status update through PATCH /subtasks/{id}/status
+* UpdateSubtaskStatusRequest validation
+* Prevention of unfinished subtasks on completed tasks
 
 Some persistence tests use Testcontainers with PostgreSQL to validate the real database behavior.
 
@@ -455,6 +470,8 @@ size - page size
 sort - sort expression
 ```
 
+By default, results use page size 20 and are sorted by `createdAt` descending. The maximum accepted page size is 100.
+
 Example:
 
 ``` HTTP
@@ -543,6 +560,201 @@ Task not found:
 404 Not Found
 ```
 
+Unfinished subtasks response:
+
+``` HTTP
+422 Unprocessable Content
+```
+
+JSON:
+
+``` JSON
+{
+  "timestamp": "2026-05-18T11:05:00",
+  "status": 422,
+  "error": "Unprocessable Content",
+  "message": "Task cannot be completed because it has unfinished subtasks.",
+  "path": "/tasks/cc7c20b3-723e-4b82-8491-3f95fd3eaf42/status",
+  "fields": []
+}
+```
+
+<h3>Subtasks</h3>
+
+Create subtask
+
+``` HTTP
+POST /tasks/{taskId}/subtasks
+```
+
+Request body:
+
+``` JSON
+{
+  "title": "Write controller tests",
+  "description": "Cover subtask endpoints with MockMvc",
+  "status": "PENDING"
+}
+```
+
+The `status` field is optional. When omitted, the subtask is created with `PENDING`.
+
+Successful response:
+
+``` HTTP
+201 Created
+Location: /subtasks/{id}
+```
+
+JSON:
+
+``` JSON
+{
+  "id": "5a86ed15-95b7-47f4-99c4-5461d653efde",
+  "title": "Write controller tests",
+  "description": "Cover subtask endpoints with MockMvc",
+  "status": "PENDING",
+  "createdAt": "2026-05-18T10:45:00Z",
+  "completedAt": null,
+  "taskId": "cc7c20b3-723e-4b82-8491-3f95fd3eaf42"
+}
+```
+
+Validation error response:
+
+``` HTTP
+400 Bad Request
+```
+
+Task not found:
+
+``` HTTP
+404 Not Found
+```
+
+Completed task with unfinished subtask response:
+
+``` HTTP
+422 Unprocessable Content
+```
+
+JSON:
+
+``` JSON
+{
+  "timestamp": "2026-05-18T11:05:00",
+  "status": 422,
+  "error": "Unprocessable Content",
+  "message": "Cannot create unfinished subtask for a completed task.",
+  "path": "/tasks/cc7c20b3-723e-4b82-8491-3f95fd3eaf42/subtasks",
+  "fields": []
+}
+```
+
+<h3>List subtasks from a task</h3>
+
+``` HTTP
+GET /tasks/{taskId}/subtasks
+```
+
+Optional query parameters:
+
+```
+page - page number, starting at 0
+size - page size
+sort - sort expression
+```
+
+By default, results use page size 20 and are sorted by `createdAt` ascending. The maximum accepted page size is 100.
+
+Example:
+
+``` HTTP
+GET /tasks/cc7c20b3-723e-4b82-8491-3f95fd3eaf42/subtasks?page=0&size=20
+```
+
+Successful response:
+
+``` HTTP
+200 OK
+```
+
+JSON:
+
+``` JSON
+{
+  "content": [
+    {
+      "id": "5a86ed15-95b7-47f4-99c4-5461d653efde",
+      "title": "Write controller tests",
+      "description": "Cover subtask endpoints with MockMvc",
+      "status": "PENDING",
+      "createdAt": "2026-05-18T10:45:00Z",
+      "completedAt": null,
+      "taskId": "cc7c20b3-723e-4b82-8491-3f95fd3eaf42"
+    }
+  ],
+  "page": {
+    "size": 20,
+    "number": 0,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+```
+
+Task not found:
+
+``` HTTP
+404 Not Found
+```
+
+<h3>Update subtask status</h3>
+
+``` HTTP
+PATCH /subtasks/{id}/status
+```
+
+Request body:
+
+``` JSON
+{
+  "status": "COMPLETED"
+}
+```
+
+Successful response:
+
+``` HTTP
+200 OK
+```
+
+JSON:
+
+``` JSON
+{
+  "id": "5a86ed15-95b7-47f4-99c4-5461d653efde",
+  "title": "Write controller tests",
+  "description": "Cover subtask endpoints with MockMvc",
+  "status": "COMPLETED",
+  "createdAt": "2026-05-18T10:45:00Z",
+  "completedAt": "2026-05-18T11:00:00Z",
+  "taskId": "cc7c20b3-723e-4b82-8491-3f95fd3eaf42"
+}
+```
+
+Validation error response:
+
+``` HTTP
+400 Bad Request
+```
+
+Subtask not found:
+
+``` HTTP
+404 Not Found
+```
+
 ------------------------
 
 ## Domain model
@@ -591,6 +803,7 @@ Rules:
 - completedAt is set when status is COMPLETED
 - completedAt is cleared when status changes back to PENDING or IN_PROGRESS
 - user is required
+- task cannot be completed while any subtask is still PENDING or IN_PROGRESS
 
 <h3>Subtask</h3>
 
@@ -612,8 +825,12 @@ Rules:
 
 - title is required
 - status is required
+- status defaults to PENDING when omitted during creation
 - createdAt is required
+- completedAt is set when status is COMPLETED
+- completedAt is cleared when status changes back to PENDING or IN_PROGRESS
 - task is required
+- PENDING or IN_PROGRESS subtasks cannot be created for or applied to completed tasks
 
 <h3>TaskStatus</h3>
 

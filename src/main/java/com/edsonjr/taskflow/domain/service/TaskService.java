@@ -7,6 +7,7 @@ import com.edsonjr.taskflow.domain.repository.AppUserRepository;
 import com.edsonjr.taskflow.domain.repository.SubtaskRepository;
 import com.edsonjr.taskflow.domain.repository.TaskRepository;
 import com.edsonjr.taskflow.domain.specification.TaskSpecifications;
+import com.edsonjr.taskflow.exception.BusinessException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -67,7 +68,7 @@ public class TaskService {
                 .orElseThrow(() -> new NotFoundException(TASK_NOT_FOUND_MESSAGE));
 
         if (status == TaskStatus.COMPLETED && hasUnfinishedSubtasks(taskId)) {
-            throw new IllegalStateException(TASK_HAS_UNFINISHED_SUBTASKS_MESSAGE);
+            throw new BusinessException(TASK_HAS_UNFINISHED_SUBTASKS_MESSAGE);
         }
 
         task.updateStatus(status);

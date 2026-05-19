@@ -47,16 +47,21 @@ public class Subtask {
     protected Subtask() {
     }
 
-    private Subtask(String title, String description, Task task) {
-        this.title = requireNonBlank(title, "title");
-        this.description = normalizeOptionalText(description);
-        this.status = TaskStatus.PENDING;
-        this.createdAt = Instant.now();
+    private Subtask(Task task, String title, String description, TaskStatus status) {
         this.task = Objects.requireNonNull(task, "task is required");
+        this.title = requireNonBlank(title);
+        this.description = normalizeDescription(description);
+        this.status = status == null ? TaskStatus.PENDING : status;
+        this.createdAt = Instant.now();
+        this.completedAt = resolveCompletedAt(this.status, null);
     }
 
-    public static Subtask create(String title, String description, Task task) {
-        return new Subtask(title, description, task);
+    public static Subtask create(Task task, String title, String description) {
+        return create(task, title, description, null);
+    }
+
+    public static Subtask create(Task task, String title, String description, TaskStatus status) {
+        return new Subtask(task, title, description, status);
     }
 
     public UUID getId() {
@@ -87,23 +92,39 @@ public class Subtask {
         return task;
     }
 
-    private static String requireNonBlank(String value, String fieldName) {
-        Objects.requireNonNull(value, fieldName + " is required");
+    public void updateStatus(TaskStatus status) {
+        this.status = Objects.requireNonNull(status, "status is required");
+        this.completedAt = resolveCompletedAt(this.status, this.completedAt);
+    }
+
+    private static String normalizeDescription(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalizedValue = value.trim();
+
+        return normalizedValue.isBlank() ? null : normalizedValue;
+    }
+
+    private static Instant resolveCompletedAt(TaskStatus status, Instant currentCompletedAt) {
+        if (TaskStatus.COMPLETED.equals(status)) {
+            return currentCompletedAt != null ? currentCompletedAt : Instant.now();
+        }
+
+        return null;
+    }
+
+    private static String requireNonBlank(String value) {
+        Objects.requireNonNull(value, "title is required");
 
         String normalizedValue = value.trim();
 
         if (normalizedValue.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be blank");
+            throw new IllegalArgumentException("title must not be blank");
         }
 
         return normalizedValue;
     }
 
-    private static String normalizeOptionalText(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        return value.trim();
-    }
 }

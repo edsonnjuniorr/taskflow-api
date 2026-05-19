@@ -6,6 +6,7 @@ import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
 import com.edsonjr.taskflow.domain.service.TaskService;
+import com.edsonjr.taskflow.exception.BusinessException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -213,6 +214,31 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.fields[*].field").value(hasItem("status")));
 
         verifyNoInteractions(taskService);
+    }
+
+    @Test
+    void shouldReturnUnprocessableContentWhenTaskHasUnfinishedSubtasks() throws Exception {
+        UUID taskId = UUID.randomUUID();
+
+        when(taskService.updateStatus(taskId, COMPLETED))
+                .thenThrow(new BusinessException("Task cannot be completed because it has unfinished subtasks."));
+
+        String payload = """
+                {
+                  "status": "COMPLETED"
+                }
+                """;
+
+        mockMvc.perform(patch("/tasks/{id}/status", taskId)
+                        .contentType(APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.status").value(422))
+                .andExpect(jsonPath("$.error").value("Unprocessable Content"))
+                .andExpect(jsonPath("$.message").value("Task cannot be completed because it has unfinished subtasks."));
+
+        verify(taskService).updateStatus(taskId, COMPLETED);
+        verifyNoMoreInteractions(taskService);
     }
 
     private static Task taskWithIds(
