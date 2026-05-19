@@ -20,6 +20,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -69,14 +70,15 @@ class SubtaskControllerTest extends PostgreSQLIntegrationTest {
 
         mockMvc.perform(post("/tasks/{id}/subtasks", task.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                .content(requestBody))
                 .andExpect(status().isCreated())
+                .andExpect(header().doesNotExist("Location"))
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.title").value("Create unit tests"))
                 .andExpect(jsonPath("$.description").value("Cover the subtask creation flow"))
                 .andExpect(jsonPath("$.status").value("PENDING"))
                 .andExpect(jsonPath("$.createdAt").exists())
-                .andExpect(jsonPath("$.completedAt").doesNotExist())
+                .andExpect(jsonPath("$.completedAt").value(nullValue()))
                 .andExpect(jsonPath("$.taskId").value(task.getId().toString()));
     }
 

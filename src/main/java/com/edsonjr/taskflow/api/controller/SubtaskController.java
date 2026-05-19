@@ -10,10 +10,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.UUID;
 
 import static org.springframework.data.domain.Sort.Direction.ASC;
@@ -39,9 +39,7 @@ public class SubtaskController {
                 request.status()
         );
 
-        return ResponseEntity
-                .created(URI.create("/subtasks/" + subtask.getId()))
-                .body(SubtaskResponse.from(subtask, taskId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(SubtaskResponse.from(subtask, taskId));
     }
 
     @GetMapping("/tasks/{taskId}/subtasks")

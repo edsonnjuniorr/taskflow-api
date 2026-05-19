@@ -603,7 +603,6 @@ Successful response:
 
 ``` HTTP
 201 Created
-Location: /subtasks/{id}
 ```
 
 JSON:
