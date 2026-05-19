@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record UpdateSubtaskStatusRequest(
 
-        @NotNull(message = "status is required")
+        @NotNull(message = "Status is required.")
         TaskStatus status
 ) {
 }

@@ -23,6 +23,7 @@ Initial project setup with:
 - JPA/Hibernate mappings
 - Database constraints for required fields, unique email and foreign keys
 - Bean Validation for request payloads
+- Consistent API validation messages for request payloads
 - Standardized global API error handling
 - Consistent error response structure
 - Field-level validation error responses
@@ -55,9 +56,32 @@ Initial project setup with:
   - Prevent completed tasks from having unfinished subtasks
 - Automated tests for:
   - Domain validation
+  - Request DTO validation
   - Persistence
   - Service business rules
   - Controller behavior with MockMvc
+
+## API language
+
+The challenge allows choosing the language used for entity and endpoint names.
+
+This project uses English names consistently for endpoints, JSON fields and enum values:
+
+| Challenge term | Project term |
+|----------------|--------------|
+| `/usuarios` | `/users` |
+| `/tarefas` | `/tasks` |
+| `/subtarefas` | `/subtasks` |
+| `nome` | `name` |
+| `titulo` | `title` |
+| `descricao` | `description` |
+| `dataCriacao` | `createdAt` |
+| `dataConclusao` | `completedAt` |
+| `usuarioId` | `userId` |
+| `tarefaId` | `taskId` |
+| `PENDENTE` | `PENDING` |
+| `EM_ANDAMENTO` | `IN_PROGRESS` |
+| `CONCLUIDA` | `COMPLETED` |
 
 ## Requirements
 
@@ -187,9 +211,12 @@ The current test suite validates:
 * UpdateTaskStatusRequest validation
 * Task status transitions in the domain model
 * TaskService status update business rules
+* CreateAppUserRequest validation
+* CreateTaskRequest validation
 * Subtask creation and listing
 * Subtask pagination
 * Subtask status update through PATCH /subtasks/{id}/status
+* CreateSubtaskRequest validation
 * UpdateSubtaskStatusRequest validation
 * Prevention of unfinished subtasks on completed tasks
 
@@ -231,6 +258,8 @@ fields - field-level validation errors, when applicable
 ```
 
 The API does not expose stack traces, exception class names or internal implementation details in JSON error responses.
+
+API request validation messages follow a consistent English style: sentence case, clear field name, and a final period.
 
 ------------------------
 
@@ -804,6 +833,8 @@ Rules:
 - user is required
 - task cannot be completed while any subtask is still PENDING or IN_PROGRESS
 
+This rule is enforced during task status updates. If any subtask is still `PENDING` or `IN_PROGRESS`, the API returns `422 Unprocessable Content` instead of completing the task.
+
 <h3>Subtask</h3>
 
 Represents a task subdivision.
@@ -830,6 +861,8 @@ Rules:
 - completedAt is cleared when status changes back to PENDING or IN_PROGRESS
 - task is required
 - PENDING or IN_PROGRESS subtasks cannot be created for or applied to completed tasks
+
+The last rule is an extra consistency safeguard. It prevents a completed task from later ending up with unfinished subtasks, either by creating a new unfinished subtask or by reopening an existing completed subtask.
 
 <h3>TaskStatus</h3>
 
