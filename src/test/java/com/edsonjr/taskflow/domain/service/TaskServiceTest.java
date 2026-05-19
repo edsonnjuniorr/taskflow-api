@@ -5,6 +5,7 @@ import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.repository.AppUserRepository;
 import com.edsonjr.taskflow.domain.repository.SubtaskRepository;
 import com.edsonjr.taskflow.domain.repository.TaskRepository;
+import com.edsonjr.taskflow.exception.BusinessException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -182,7 +183,7 @@ class TaskServiceTest {
     }
 
     @Test
-    void shouldThrowIllegalStateExceptionWhenTaskHasUnfinishedSubtasks() {
+    void shouldThrowBusinessExceptionWhenTaskHasUnfinishedSubtasks() {
         UUID taskId = UUID.randomUUID();
         AppUser user = AppUser.create("Edson", "edson@example.com");
         Task task = Task.create("Finish task module", null, PENDING, user);
@@ -191,7 +192,7 @@ class TaskServiceTest {
         when(subtaskRepository.existsByTask_IdAndStatusNot(taskId, COMPLETED)).thenReturn(true);
 
         assertThatThrownBy(() -> taskService.updateStatus(taskId, COMPLETED))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("Task cannot be completed because it has unfinished subtasks.");
 
         assertThat(task.getStatus()).isEqualTo(PENDING);

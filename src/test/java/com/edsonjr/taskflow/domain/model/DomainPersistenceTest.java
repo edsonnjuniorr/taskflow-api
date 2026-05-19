@@ -51,7 +51,7 @@ class DomainPersistenceTest {
         Task task = Task.create("Create API", "Build domain model", user);
         entityManager.persist(task);
 
-        Subtask subtaskTest = Subtask.create("Create entities", "Implement JPA entities", task);
+        Subtask subtaskTest = Subtask.create(task, "Create entities", "Implement JPA entities");
         entityManager.persist(subtaskTest);
 
         entityManager.flush();
@@ -104,7 +104,7 @@ class DomainPersistenceTest {
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtaskTest = Subtask.create("Subtask without task", null, task);
+        Subtask subtaskTest = Subtask.create(task, "Subtask without task", null);
         ReflectionTestUtils.setField(subtaskTest, "task", null);
 
         assertPersistenceFailure(() -> {
@@ -189,7 +189,7 @@ class DomainPersistenceTest {
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtaskTest = Subtask.create("Subtask title", null, task);
+        Subtask subtaskTest = Subtask.create(task, "Subtask title", null);
         ReflectionTestUtils.setField(subtaskTest, "title", null);
 
         assertPersistenceFailure(() -> {
@@ -207,7 +207,7 @@ class DomainPersistenceTest {
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtaskTest = Subtask.create("Subtask status", null, task);
+        Subtask subtaskTest = Subtask.create(task, "Subtask status", null);
         ReflectionTestUtils.setField(subtaskTest, "status", null);
 
         assertPersistenceFailure(() -> {
@@ -225,7 +225,7 @@ class DomainPersistenceTest {
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtaskTest = Subtask.create("Subtask created at", null, task);
+        Subtask subtaskTest = Subtask.create(task, "Subtask created at", null);
         ReflectionTestUtils.setField(subtaskTest, "createdAt", null);
 
         assertPersistenceFailure(() -> {

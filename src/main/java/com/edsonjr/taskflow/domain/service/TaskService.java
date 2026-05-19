@@ -7,7 +7,10 @@ import com.edsonjr.taskflow.domain.repository.AppUserRepository;
 import com.edsonjr.taskflow.domain.repository.SubtaskRepository;
 import com.edsonjr.taskflow.domain.repository.TaskRepository;
 import com.edsonjr.taskflow.domain.specification.TaskSpecifications;
+import com.edsonjr.taskflow.exception.BusinessException;
 import com.edsonjr.taskflow.exception.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -18,6 +21,8 @@ import java.util.UUID;
 
 @Service
 public class TaskService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
 
     private static final String USER_NOT_FOUND_MESSAGE = "User not found.";
     private static final String TASK_NOT_FOUND_MESSAGE = "Task not found.";
@@ -41,7 +46,11 @@ public class TaskService {
     @Transactional
     public Task create(String title, String description, UUID userId, TaskStatus status) {
         AppUser user = appUserRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_MESSAGE));
+                .orElseThrow(() -> {
+                    LOGGER.debug("Task creation rejected because user was not found. userId={}", userId);
+
+                    return new NotFoundException(USER_NOT_FOUND_MESSAGE);
+                });
 
         Task task = Task.create(
                 title,
@@ -50,7 +59,16 @@ public class TaskService {
                 user
         );
 
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+
+        LOGGER.info(
+                "Task created successfully. taskId={}, userId={}, status={}",
+                savedTask.getId(),
+                userId,
+                savedTask.getStatus()
+        );
+
+        return savedTask;
     }
 
     @Transactional(readOnly = true)
@@ -64,13 +82,32 @@ public class TaskService {
     @Transactional
     public Task updateStatus(UUID taskId, TaskStatus status) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new NotFoundException(TASK_NOT_FOUND_MESSAGE));
+                .orElseThrow(() -> {
+                    LOGGER.debug("Task status update rejected because task was not found. taskId={}", taskId);
+
+                    return new NotFoundException(TASK_NOT_FOUND_MESSAGE);
+                });
 
         if (status == TaskStatus.COMPLETED && hasUnfinishedSubtasks(taskId)) {
-            throw new IllegalStateException(TASK_HAS_UNFINISHED_SUBTASKS_MESSAGE);
+            LOGGER.warn(
+                    "Task status update rejected because task has unfinished subtasks. taskId={}, requestedStatus={}",
+                    taskId,
+                    status
+            );
+
+            throw new BusinessException(TASK_HAS_UNFINISHED_SUBTASKS_MESSAGE);
         }
 
+        TaskStatus previousStatus = task.getStatus();
+
         task.updateStatus(status);
+
+        LOGGER.info(
+                "Task status updated successfully. taskId={}, previousStatus={}, currentStatus={}",
+                taskId,
+                previousStatus,
+                task.getStatus()
+        );
 
         return task;
     }
