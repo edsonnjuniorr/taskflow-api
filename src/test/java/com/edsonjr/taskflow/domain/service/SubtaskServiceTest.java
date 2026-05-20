@@ -268,6 +268,24 @@ class SubtaskServiceTest {
     }
 
     @Test
+    void shouldUpdateSubtaskToCompletedWhenTaskIsCompleted() {
+        UUID subtaskId = UUID.randomUUID();
+        Task task = createCompletedTask();
+        Subtask subtask = Subtask.create(task, "Create tests", null, TaskStatus.COMPLETED);
+
+        when(subtaskRepository.findByIdWithTask(subtaskId)).thenReturn(Optional.of(subtask));
+        when(subtaskRepository.save(any(Subtask.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Subtask updatedSubtask = subtaskService.updateStatus(subtaskId, TaskStatus.COMPLETED);
+
+        assertThat(updatedSubtask.getStatus()).isEqualTo(TaskStatus.COMPLETED);
+        assertThat(updatedSubtask.getCompletedAt()).isNotNull();
+
+        verify(subtaskRepository).findByIdWithTask(subtaskId);
+        verify(subtaskRepository).save(subtask);
+    }
+
+    @Test
     void shouldThrowNotFoundExceptionWhenSubtaskDoesNotExistWhileUpdatingStatus() {
         UUID subtaskId = UUID.randomUUID();
 

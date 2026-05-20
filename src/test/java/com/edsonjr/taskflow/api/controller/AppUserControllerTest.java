@@ -90,6 +90,31 @@ class AppUserControllerTest {
     }
 
     @Test
+    void shouldReturnBadRequestWhenCreateAppUserExceedsMaxLengths() throws Exception {
+        String payload = """
+                {
+                  "name": "%s",
+                  "email": "%s"
+                }
+                """.formatted(
+                "a".repeat(121),
+                "a".repeat(249) + "@x.com"
+        );
+
+        mockMvc.perform(post("/users")
+                        .contentType(APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.fields").isArray())
+                .andExpect(jsonPath("$.fields[*].field").value(hasItem("name")))
+                .andExpect(jsonPath("$.fields[*].field").value(hasItem("email")));
+
+        verifyNoInteractions(appUserService);
+    }
+
+    @Test
     void shouldReturnConflictWhenEmailAlreadyExists() throws Exception {
         when(appUserService.create("John Doe", "john.doe@email.com"))
                 .thenThrow(new EmailAlreadyExistsException("Unable to create user with provided data."));

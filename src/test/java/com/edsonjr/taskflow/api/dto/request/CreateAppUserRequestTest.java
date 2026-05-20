@@ -57,6 +57,20 @@ class CreateAppUserRequestTest {
     }
 
     @Test
+    void shouldValidateNameMaxLength() {
+        CreateAppUserRequest request = new CreateAppUserRequest(
+                "a".repeat(121),
+                "edson.junior@email.com"
+        );
+
+        Set<ConstraintViolation<CreateAppUserRequest>> violations = validator.validate(request);
+
+        assertThat(violations)
+                .anyMatch(violation -> violation.getPropertyPath().toString().equals("name")
+                        && violation.getMessage().equals("Name must have at most 120 characters."));
+    }
+
+    @Test
     void shouldRequireEmail() {
         CreateAppUserRequest request = new CreateAppUserRequest(
                 "Edson Junior",
@@ -68,6 +82,20 @@ class CreateAppUserRequestTest {
         assertThat(violations)
                 .anyMatch(violation -> violation.getPropertyPath().toString().equals("email")
                         && violation.getMessage().equals("Email is required."));
+    }
+
+    @Test
+    void shouldValidateEmailMaxLength() {
+        CreateAppUserRequest request = new CreateAppUserRequest(
+                "Edson Junior",
+                "a".repeat(249) + "@x.com"
+        );
+
+        Set<ConstraintViolation<CreateAppUserRequest>> violations = validator.validate(request);
+
+        assertThat(violations)
+                .anyMatch(violation -> violation.getPropertyPath().toString().equals("email")
+                        && violation.getMessage().equals("Email must have at most 254 characters."));
     }
 
     @Test
