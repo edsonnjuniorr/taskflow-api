@@ -6,13 +6,13 @@ import com.edsonjr.taskflow.domain.model.TaskStatus;
 import com.edsonjr.taskflow.domain.repository.AppUserRepository;
 import com.edsonjr.taskflow.domain.repository.TaskRepository;
 import com.edsonjr.taskflow.domain.repository.SubtaskRepository;
-import com.edsonjr.taskflow.support.PostgreSQLIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -28,7 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class SubtaskControllerTest extends PostgreSQLIntegrationTest {
+@ActiveProfiles("test")
+class SubtaskControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -12,6 +12,8 @@ Initial project setup with:
 - Spring Boot
 - Maven Wrapper
 - PostgreSQL with Docker Compose
+- H2 in-memory database for automated tests
+- PostgreSQL integration tests with Testcontainers
 - Environment-based database configuration
 - Flyway database migrations
 - Domain entities:
@@ -85,9 +87,14 @@ This project uses English names consistently for endpoints, JSON fields and enum
 
 ## Requirements
 
-Before running the project, make sure you have installed:
+Before running the automated tests, make sure you have installed:
 
 - Java 17+
+
+The project includes Maven Wrapper scripts (`mvnw` and `mvnw.cmd`), so Maven does not need to be installed when using the documented commands. If you prefer to run `mvn` directly, install Maven separately.
+
+To run the application locally with PostgreSQL or the PostgreSQL integration test profile, you also need:
+
 - Docker
 - Docker Compose
 
@@ -163,7 +170,7 @@ When the application starts, Flyway will automatically apply the database migrat
 
 ## Running tests
 
-Run all automated tests:
+Run the default automated test suite:
 
 ```bash
 ./mvnw test
@@ -174,6 +181,24 @@ On Windows:
 ```bash
 ./mvnw.cmd test
 ```
+
+The default test suite uses an H2 in-memory database in PostgreSQL compatibility mode, so Docker is not required for the regular test workflow.
+
+Spring integration tests that need a database activate the `test` profile with `@ActiveProfiles("test")`. This loads `src/test/resources/application-test.yaml` automatically during those tests, so no extra command-line profile is required for the default test suite.
+
+To also run the PostgreSQL integration tests with Testcontainers, keep Docker running and use:
+
+```bash
+./mvnw test -Ppostgres-it
+```
+
+On Windows:
+
+```bash
+./mvnw.cmd test -Ppostgres-it
+```
+
+PostgreSQL-specific tests are tagged with `postgres` and validate the real database dialect, Flyway migrations, JPA mappings and database constraints against a disposable PostgreSQL container.
 
 The current test suite validates:
 
@@ -219,8 +244,7 @@ The current test suite validates:
 * CreateSubtaskRequest validation
 * UpdateSubtaskStatusRequest validation
 * Prevention of unfinished subtasks on completed tasks
-
-Some persistence tests use Testcontainers with PostgreSQL to validate the real database behavior.
+* PostgreSQL integration behavior through the optional `postgres-it` profile
 
 ------------------------
 
@@ -884,6 +908,7 @@ COMPLETED
 * Spring Data JPA
 * Hibernate
 * PostgreSQL
+* H2
 * Flyway
 * Docker Compose
 * JUnit 5
