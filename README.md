@@ -11,7 +11,8 @@ Initial project setup with:
 - Java 17
 - Spring Boot
 - Maven Wrapper
-- PostgreSQL with Docker Compose
+- Dockerfile for the application
+- Docker Compose full stack with application and PostgreSQL
 - H2 in-memory database for automated tests
 - PostgreSQL integration tests with Testcontainers
 - Environment-based database configuration
@@ -104,7 +105,8 @@ To run the application locally with PostgreSQL or the PostgreSQL integration tes
 
 This project does not commit real database credentials.
 
-Create a local `.env` file based on `.env.example`:
+The Docker Compose setup includes safe local defaults, so `docker compose up --build` works without a `.env` file.
+To customize database credentials or local ports, create a local `.env` file based on `.env.example`:
 
 ```bash
 cp .env.example .env
@@ -115,17 +117,66 @@ Then update the values if necessary:
 ```
 POSTGRES_DB=taskflow_db
 POSTGRES_USER=taskflow_user
-POSTGRES_PASSWORD=change_me
+POSTGRES_PASSWORD=taskflow_password
+APP_PORT=8080
+POSTGRES_PORT=5432
 ```
 
 ------------------------
 
-## Running PostgreSQL with Docker
+## Running with Docker
 
-Start the local PostgreSQL database:
+Start the full stack with the application and PostgreSQL:
 
 ```bash
-docker compose up -d
+docker compose up --build
+```
+
+Or run it in the background:
+
+```bash
+docker compose up --build -d
+```
+
+The API will be available at:
+
+```text
+http://localhost:8080
+```
+
+If you change `APP_PORT` in `.env`, use that port in the local URL.
+If port `5432` is already in use on your machine, change `POSTGRES_PORT`; the application container will still connect to PostgreSQL through Docker's internal network.
+
+When the application starts, Flyway will automatically apply the database migrations.
+
+Inspect the application logs:
+
+```bash
+docker compose logs -f app
+```
+
+Stop the full stack:
+
+```bash
+docker compose down
+```
+
+Stop the full stack and remove the PostgreSQL volume:
+
+```bash
+docker compose down -v
+```
+
+Use `docker compose down -v` when you want to recreate the database from scratch and re-run the Flyway migrations.
+
+------------------------
+
+## Running PostgreSQL only with Docker
+
+If you prefer to run the application with Maven Wrapper on your machine, start only the local PostgreSQL database:
+
+```bash
+docker compose up -d postgres
 ```
 
 Check if the container is running:
@@ -146,11 +197,11 @@ To stop the database and remove the volume:
 docker compose down -v
 ```
 
-Use docker compose down -v when you want to recreate the database from scratch and re-run the Flyway migrations.
+Use `docker compose down -v` when you want to recreate the database from scratch and re-run the Flyway migrations.
 
 ------------------------
 
-## Running the application
+## Running the application locally
 
 With PostgreSQL running, start the application:
 
@@ -163,6 +214,10 @@ On Windows:
 ```bash
 ./mvnw.cmd spring-boot:run
 ```
+
+The local application uses the default PostgreSQL connection values from `.env.example`.
+If you change the `.env` values, export the matching `POSTGRES_DB`, `POSTGRES_USER` and `POSTGRES_PASSWORD` variables before starting the application locally, or provide `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`.
+If you change `POSTGRES_PORT`, provide a matching `SPRING_DATASOURCE_URL`, for example `jdbc:postgresql://localhost:5433/taskflow_db`.
 
 When the application starts, Flyway will automatically apply the database migrations.
 
@@ -910,6 +965,7 @@ COMPLETED
 * PostgreSQL
 * H2
 * Flyway
+* Docker
 * Docker Compose
 * JUnit 5
 * Mockito
