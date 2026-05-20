@@ -4,6 +4,16 @@ spring:
       pageable:
         max-page-size: 100
 
+  datasource:
+    url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/${POSTGRES_DB:taskflow_db}}"
+    driver-class-name: "${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}"
+    username: "${SPRING_DATASOURCE_USERNAME:${POSTGRES_USER:taskflow_user}}"
+    password: "${SPRING_DATASOURCE_PASSWORD:${POSTGRES_PASSWORD:taskflow_password}}"
+
+  docker:
+    compose:
+      enabled: "${SPRING_DOCKER_COMPOSE_ENABLED:false}"
+
   jpa:
     open-in-view: false
     hibernate:
