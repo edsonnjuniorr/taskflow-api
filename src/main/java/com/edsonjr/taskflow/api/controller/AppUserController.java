@@ -5,6 +5,7 @@ import com.edsonjr.taskflow.api.dto.response.AppUserResponse;
 import com.edsonjr.taskflow.api.mapper.AppUserMapper;
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.service.AppUserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.UUID;
 
+@Tag(name = "Users", description = "Create users and retrieve user details.")
 @RestController
 @RequestMapping("/users")
 public class AppUserController {

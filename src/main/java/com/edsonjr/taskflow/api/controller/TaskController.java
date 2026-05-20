@@ -7,6 +7,7 @@ import com.edsonjr.taskflow.api.mapper.TaskMapper;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
 import com.edsonjr.taskflow.domain.service.TaskService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
+@Tag(name = "Tasks", description = "Create, filter and update tasks assigned to users.")
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {

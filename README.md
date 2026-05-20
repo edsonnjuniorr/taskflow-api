@@ -13,6 +13,7 @@ Initial project setup with:
 - Maven Wrapper
 - Dockerfile for the application
 - Docker Compose full stack with application and PostgreSQL
+- Swagger UI and OpenAPI documentation
 - H2 in-memory database for automated tests
 - PostgreSQL integration tests with Testcontainers
 - Environment-based database configuration
@@ -31,6 +32,7 @@ Initial project setup with:
 - Consistent error response structure
 - Field-level validation error responses
 - Safe 500 responses without stack trace exposure
+- OpenAPI metadata grouped by Users, Tasks and Subtasks
 - Preserved Spring MVC framework error statuses before fallback 500 handling
 - Internal logging for unexpected server errors
 - AppUser feature:
@@ -144,6 +146,12 @@ The API will be available at:
 http://localhost:8080
 ```
 
+Swagger UI will be available at:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
 If you change `APP_PORT` in `.env`, use that port in the local URL.
 If port `5432` is already in use on your machine, change `POSTGRES_PORT`; the application container will still connect to PostgreSQL through Docker's internal network.
 
@@ -168,6 +176,26 @@ docker compose down -v
 ```
 
 Use `docker compose down -v` when you want to recreate the database from scratch and re-run the Flyway migrations.
+
+------------------------
+
+## API documentation
+
+The project exposes interactive API documentation with Swagger UI and the raw OpenAPI specification generated from the Spring controllers and request/response models.
+
+With the application running, access:
+
+```text
+Swagger UI: http://localhost:8080/swagger-ui.html
+OpenAPI JSON: http://localhost:8080/v3/api-docs
+OpenAPI YAML: http://localhost:8080/v3/api-docs.yaml
+```
+
+The Swagger UI groups endpoints by:
+
+- Users
+- Tasks
+- Subtasks
 
 ------------------------
 
@@ -215,6 +243,12 @@ On Windows:
 mvnw.cmd spring-boot:run
 ```
 
+If you are using PowerShell, run:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
 The local application uses the default PostgreSQL connection values from `.env.example`.
 If you change the `.env` values, export the matching `POSTGRES_DB`, `POSTGRES_USER` and `POSTGRES_PASSWORD` variables before starting the application locally, or provide `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`.
 If you change `POSTGRES_PORT`, provide a matching `SPRING_DATASOURCE_URL`, for example `jdbc:postgresql://localhost:5433/taskflow_db`.
@@ -237,6 +271,12 @@ On Windows:
 mvnw.cmd test
 ```
 
+If you are using PowerShell, run:
+
+```powershell
+.\mvnw.cmd test
+```
+
 The default test suite uses an H2 in-memory database in PostgreSQL compatibility mode, so Docker is not required for the regular test workflow.
 
 Spring integration tests that need a database activate the `test` profile with `@ActiveProfiles("test")`. This loads `src/test/resources/application-test.yaml` automatically during those tests, so no extra command-line profile is required for the default test suite.
@@ -251,6 +291,12 @@ On Windows:
 
 ```bash
 mvnw.cmd test -Ppostgres-it
+```
+
+If you are using PowerShell, run:
+
+```powershell
+.\mvnw.cmd test -Ppostgres-it
 ```
 
 PostgreSQL-specific tests are tagged with `postgres` and validate the real database dialect, Flyway migrations, JPA mappings and database constraints against a disposable PostgreSQL container.
@@ -962,6 +1008,7 @@ COMPLETED
 * Spring Web MVC
 * Spring Data JPA
 * Hibernate
+* springdoc-openapi
 * PostgreSQL
 * H2
 * Flyway
