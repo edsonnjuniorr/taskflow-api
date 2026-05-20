@@ -212,7 +212,7 @@ With PostgreSQL running, start the application:
 On Windows:
 
 ```bash
-./mvnw.cmd spring-boot:run
+mvnw.cmd spring-boot:run
 ```
 
 The local application uses the default PostgreSQL connection values from `.env.example`.
@@ -234,7 +234,7 @@ Run the default automated test suite:
 On Windows:
 
 ```bash
-./mvnw.cmd test
+mvnw.cmd test
 ```
 
 The default test suite uses an H2 in-memory database in PostgreSQL compatibility mode, so Docker is not required for the regular test workflow.
@@ -250,7 +250,7 @@ To also run the PostgreSQL integration tests with Testcontainers, keep Docker ru
 On Windows:
 
 ```bash
-./mvnw.cmd test -Ppostgres-it
+mvnw.cmd test -Ppostgres-it
 ```
 
 PostgreSQL-specific tests are tagged with `postgres` and validate the real database dialect, Flyway migrations, JPA mappings and database constraints against a disposable PostgreSQL container.
