@@ -19,9 +19,9 @@ Initial project setup with:
 - Environment-based database configuration
 - Flyway database migrations
 - Domain entities:
-    - AppUser
-    - Task
-    - Subtask
+  - AppUser
+  - Task
+  - Subtask
 - TaskStatus enum
 - UUID-based identifiers
 - JPA/Hibernate mappings
@@ -190,6 +190,8 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 OpenAPI JSON: http://localhost:8080/v3/api-docs
 OpenAPI YAML: http://localhost:8080/v3/api-docs.yaml
 ```
+
+The OpenAPI version is generated from the Maven project version during the build.
 
 The Swagger UI groups endpoints by:
 
@@ -1021,4 +1023,3 @@ COMPLETED
 * Testcontainers
 * Bean Validation
 * JaCoCo
-
