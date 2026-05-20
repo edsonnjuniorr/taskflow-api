@@ -5,6 +5,7 @@ import com.edsonjr.taskflow.api.dto.request.UpdateSubtaskStatusRequest;
 import com.edsonjr.taskflow.api.dto.response.SubtaskResponse;
 import com.edsonjr.taskflow.domain.model.Subtask;
 import com.edsonjr.taskflow.domain.service.SubtaskService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 import static org.springframework.data.domain.Sort.Direction.ASC;
 
+@Tag(name = "Subtasks", description = "Create, list and update subtasks linked to tasks.")
 @RestController
 public class SubtaskController {
 
