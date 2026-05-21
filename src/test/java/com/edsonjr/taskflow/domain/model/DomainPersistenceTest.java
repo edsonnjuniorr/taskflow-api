@@ -30,10 +30,10 @@ class DomainPersistenceTest {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
         entityManager.persist(user);
 
-        Task task = Task.create("Create API", "Build domain model", user);
+        Task task = Task.create("Create API", "Build domain model", TaskStatus.PENDING, user);
         entityManager.persist(task);
 
-        Subtask subtaskTest = Subtask.create(task, "Create entities", "Implement JPA entities");
+        Subtask subtaskTest = Subtask.create(task, "Create entities", "Implement JPA entities", TaskStatus.PENDING);
         entityManager.persist(subtaskTest);
 
         entityManager.flush();
@@ -68,7 +68,7 @@ class DomainPersistenceTest {
         entityManager.persist(user);
         entityManager.flush();
 
-        Task task = Task.create("Task without user", null, user);
+        Task task = Task.create("Task without user", null, TaskStatus.PENDING, user);
         ReflectionTestUtils.setField(task, "user", null);
 
         assertPersistenceFailure(() -> {
@@ -82,11 +82,11 @@ class DomainPersistenceTest {
         AppUser user = AppUser.create("John Doe", "john.subtask@example.com");
         entityManager.persist(user);
 
-        Task task = Task.create("Parent task", null, user);
+        Task task = Task.create("Parent task", null, TaskStatus.PENDING, user);
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtaskTest = Subtask.create(task, "Subtask without task", null);
+        Subtask subtaskTest = Subtask.create(task, "Subtask without task", null, TaskStatus.PENDING);
         ReflectionTestUtils.setField(subtaskTest, "task", null);
 
         assertPersistenceFailure(() -> {
@@ -123,7 +123,7 @@ class DomainPersistenceTest {
         entityManager.persist(user);
         entityManager.flush();
 
-        Task task = Task.create("Task title", null, user);
+        Task task = Task.create("Task title", null, TaskStatus.PENDING, user);
         ReflectionTestUtils.setField(task, "title", null);
 
         assertPersistenceFailure(() -> {
@@ -138,7 +138,7 @@ class DomainPersistenceTest {
         entityManager.persist(user);
         entityManager.flush();
 
-        Task task = Task.create("Task status", null, user);
+        Task task = Task.create("Task status", null, TaskStatus.PENDING, user);
         ReflectionTestUtils.setField(task, "status", null);
 
         assertPersistenceFailure(() -> {
@@ -153,7 +153,7 @@ class DomainPersistenceTest {
         entityManager.persist(user);
         entityManager.flush();
 
-        Task task = Task.create("Task created at", null, user);
+        Task task = Task.create("Task created at", null, TaskStatus.PENDING, user);
         ReflectionTestUtils.setField(task, "createdAt", null);
 
         assertPersistenceFailure(() -> {
@@ -167,11 +167,11 @@ class DomainPersistenceTest {
         AppUser user = AppUser.create("John Doe", "john.subtask.title@example.com");
         entityManager.persist(user);
 
-        Task task = Task.create("Parent task", null, user);
+        Task task = Task.create("Parent task", null, TaskStatus.PENDING, user);
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtaskTest = Subtask.create(task, "Subtask title", null);
+        Subtask subtaskTest = Subtask.create(task, "Subtask title", null, TaskStatus.PENDING);
         ReflectionTestUtils.setField(subtaskTest, "title", null);
 
         assertPersistenceFailure(() -> {
@@ -185,11 +185,11 @@ class DomainPersistenceTest {
         AppUser user = AppUser.create("John Doe", "john.subtask.status@example.com");
         entityManager.persist(user);
 
-        Task task = Task.create("Parent task", null, user);
+        Task task = Task.create("Parent task", null, TaskStatus.PENDING, user);
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtaskTest = Subtask.create(task, "Subtask status", null);
+        Subtask subtaskTest = Subtask.create(task, "Subtask status", null, TaskStatus.PENDING);
         ReflectionTestUtils.setField(subtaskTest, "status", null);
 
         assertPersistenceFailure(() -> {
@@ -203,11 +203,11 @@ class DomainPersistenceTest {
         AppUser user = AppUser.create("John Doe", "john.subtask.created@example.com");
         entityManager.persist(user);
 
-        Task task = Task.create("Parent task", null, user);
+        Task task = Task.create("Parent task", null, TaskStatus.PENDING, user);
         entityManager.persist(task);
         entityManager.flush();
 
-        Subtask subtaskTest = Subtask.create(task, "Subtask created at", null);
+        Subtask subtaskTest = Subtask.create(task, "Subtask created at", null, TaskStatus.PENDING);
         ReflectionTestUtils.setField(subtaskTest, "createdAt", null);
 
         assertPersistenceFailure(() -> {

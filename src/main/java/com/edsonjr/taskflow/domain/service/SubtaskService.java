@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -41,6 +42,8 @@ public class SubtaskService {
 
     @Transactional
     public Subtask create(UUID taskId, String title, String description, TaskStatus status) {
+        Objects.requireNonNull(status, "status is required");
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> {
                     LOGGER.debug("Subtask creation rejected because task was not found. taskId={}", taskId);
@@ -85,6 +88,8 @@ public class SubtaskService {
 
     @Transactional
     public Subtask updateStatus(UUID subtaskId, TaskStatus status) {
+        Objects.requireNonNull(status, "status is required");
+
         Subtask subtask = subtaskRepository.findByIdWithTask(subtaskId)
                 .orElseThrow(() -> {
                     LOGGER.debug(
@@ -125,6 +130,6 @@ public class SubtaskService {
     }
 
     private static boolean isUnfinished(TaskStatus status) {
-        return status == null || status != TaskStatus.COMPLETED;
+        return status != TaskStatus.COMPLETED;
     }
 }

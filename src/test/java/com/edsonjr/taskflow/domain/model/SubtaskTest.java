@@ -8,13 +8,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SubtaskTest {
 
     @Test
-    void shouldCreateSubtaskWithDefaultStatusWhenStatusIsNotProvided() {
+    void shouldCreateSubtaskWithRequiredFields() {
         Task task = createTask();
 
         Subtask subtask = Subtask.create(
                 task,
                 "Create unit tests",
-                "Cover subtask creation flow"
+                "Cover subtask creation flow",
+                TaskStatus.PENDING
         );
 
         assertThat(subtask.getId()).isNull();
@@ -67,7 +68,8 @@ class SubtaskTest {
         Subtask subtask = Subtask.create(
                 task,
                 "   Create tests   ",
-                "Description"
+                "Description",
+                TaskStatus.PENDING
         );
 
         assertThat(subtask.getTitle()).isEqualTo("Create tests");
@@ -80,7 +82,8 @@ class SubtaskTest {
         Subtask subtask = Subtask.create(
                 task,
                 "Create tests",
-                null
+                null,
+                TaskStatus.PENDING
         );
 
         assertThat(subtask.getDescription()).isNull();
@@ -93,7 +96,8 @@ class SubtaskTest {
         Subtask subtask = Subtask.create(
                 task,
                 "Create tests",
-                "   "
+                "   ",
+                TaskStatus.PENDING
         );
 
         assertThat(subtask.getDescription()).isNull();
@@ -106,7 +110,8 @@ class SubtaskTest {
         assertThatThrownBy(() -> Subtask.create(
                 task,
                 null,
-                "Description"
+                "Description",
+                TaskStatus.PENDING
         ))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("title is required");
@@ -119,7 +124,8 @@ class SubtaskTest {
         assertThatThrownBy(() -> Subtask.create(
                 task,
                 "   ",
-                "Description"
+                "Description",
+                TaskStatus.PENDING
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("title must not be blank");
@@ -130,10 +136,25 @@ class SubtaskTest {
         assertThatThrownBy(() -> Subtask.create(
                 null,
                 "Create tests",
-                "Description"
+                "Description",
+                TaskStatus.PENDING
         ))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("task is required");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStatusIsNull() {
+        Task task = createTask();
+
+        assertThatThrownBy(() -> Subtask.create(
+                task,
+                "Create tests",
+                "Description",
+                null
+        ))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("status is required");
     }
 
     @Test
@@ -143,7 +164,8 @@ class SubtaskTest {
         Subtask subtask = Subtask.create(
                 task,
                 "Create tests",
-                "Description"
+                "Description",
+                TaskStatus.PENDING
         );
 
         subtask.updateStatus(TaskStatus.COMPLETED);
@@ -195,7 +217,8 @@ class SubtaskTest {
         Subtask subtask = Subtask.create(
                 task,
                 "Create tests",
-                "Description"
+                "Description",
+                TaskStatus.PENDING
         );
 
         assertThatThrownBy(() -> subtask.updateStatus(null))
@@ -259,7 +282,8 @@ class SubtaskTest {
         Subtask subtask = Subtask.create(
                 task,
                 "Create tests",
-                "   Description with spaces   "
+                "   Description with spaces   ",
+                TaskStatus.PENDING
         );
 
         assertThat(subtask.getDescription()).isEqualTo("Description with spaces");

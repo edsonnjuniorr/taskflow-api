@@ -2,6 +2,7 @@ package com.edsonjr.taskflow.api.dto.request;
 
 import com.edsonjr.taskflow.domain.model.TaskStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record CreateSubtaskRequest(
@@ -13,6 +14,7 @@ public record CreateSubtaskRequest(
         @Size(max = 1000, message = "Description must have at most 1000 characters.")
         String description,
 
+        @NotNull(message = "Status is required.")
         TaskStatus status
 ) {
 }

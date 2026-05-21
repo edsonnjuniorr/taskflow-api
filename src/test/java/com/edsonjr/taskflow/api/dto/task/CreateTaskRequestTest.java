@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.edsonjr.taskflow.domain.model.TaskStatus.COMPLETED;
 import static com.edsonjr.taskflow.domain.model.TaskStatus.IN_PROGRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,7 +56,7 @@ class CreateTaskRequestTest {
                 " ",
                 "Create POST /tasks endpoint",
                 UUID.randomUUID(),
-                null
+                IN_PROGRESS
         );
 
         Set<ConstraintViolation<CreateTaskRequest>> violations = validator.validate(request);
@@ -71,7 +72,7 @@ class CreateTaskRequestTest {
                 "Implement task creation",
                 "Create POST /tasks endpoint",
                 null,
-                null
+                IN_PROGRESS
         );
 
         Set<ConstraintViolation<CreateTaskRequest>> violations = validator.validate(request);
@@ -82,12 +83,28 @@ class CreateTaskRequestTest {
     }
 
     @Test
+    void shouldRequireStatus() {
+        CreateTaskRequest request = new CreateTaskRequest(
+                "Implement task creation",
+                "Create POST /tasks endpoint",
+                UUID.randomUUID(),
+                null
+        );
+
+        Set<ConstraintViolation<CreateTaskRequest>> violations = validator.validate(request);
+
+        assertThat(violations)
+                .anyMatch(violation -> violation.getPropertyPath().toString().equals("status")
+                        && violation.getMessage().equals("Status is required."));
+    }
+
+    @Test
     void shouldLimitTitleLength() {
         CreateTaskRequest request = new CreateTaskRequest(
                 "a".repeat(161),
                 "Create POST /tasks endpoint",
                 UUID.randomUUID(),
-                null
+                COMPLETED
         );
 
         Set<ConstraintViolation<CreateTaskRequest>> violations = validator.validate(request);
@@ -103,7 +120,7 @@ class CreateTaskRequestTest {
                 "Implement task creation",
                 "a".repeat(1001),
                 UUID.randomUUID(),
-                null
+                COMPLETED
         );
 
         Set<ConstraintViolation<CreateTaskRequest>> violations = validator.validate(request);

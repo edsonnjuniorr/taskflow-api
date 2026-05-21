@@ -65,7 +65,8 @@ class SubtaskControllerTest {
         String requestBody = """
                 {
                     "title": "Create unit tests",
-                    "description": "Cover the subtask creation flow"
+                    "description": "Cover the subtask creation flow",
+                    "status": "PENDING"
                 }
                 """;
 
@@ -89,7 +90,8 @@ class SubtaskControllerTest {
 
         String requestBody = """
                 {
-                    "title": "Create unit tests"
+                    "title": "Create unit tests",
+                    "status": "PENDING"
                 }
                 """;
 
@@ -104,7 +106,8 @@ class SubtaskControllerTest {
         String requestBody = """
                 {
                     "title": "   ",
-                    "description": "Invalid title"
+                    "description": "Invalid title",
+                    "status": "PENDING"
                 }
                 """;
 
@@ -115,13 +118,31 @@ class SubtaskControllerTest {
     }
 
     @Test
+    void shouldReturnBadRequestWhenCreateSubtaskStatusIsMissing() throws Exception {
+        String requestBody = """
+                {
+                    "title": "Create unit tests"
+                }
+                """;
+
+        mockMvc.perform(post("/tasks/{id}/subtasks", task.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.fields", hasSize(1)))
+                .andExpect(jsonPath("$.fields[0].field").value("status"));
+    }
+
+    @Test
     void shouldReturnUnprocessableContentWhenCreatingUnfinishedSubtaskForCompletedTask() throws Exception {
         task.updateStatus(TaskStatus.COMPLETED);
         taskRepository.save(task);
 
         String requestBody = """
                 {
-                    "title": "Create unit tests"
+                    "title": "Create unit tests",
+                    "status": "PENDING"
                 }
                 """;
 
@@ -139,7 +160,8 @@ class SubtaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "title": "First subtask"
+                                    "title": "First subtask",
+                                    "status": "PENDING"
                                 }
                                 """))
                 .andExpect(status().isCreated());
@@ -148,7 +170,8 @@ class SubtaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "title": "Second subtask"
+                                    "title": "Second subtask",
+                                    "status": "PENDING"
                                 }
                                 """))
                 .andExpect(status().isCreated());
@@ -196,7 +219,8 @@ class SubtaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "title": "Visible subtask"
+                                    "title": "Visible subtask",
+                                    "status": "PENDING"
                                 }
                                 """))
                 .andExpect(status().isCreated());
@@ -205,7 +229,8 @@ class SubtaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "title": "Hidden subtask"
+                                    "title": "Hidden subtask",
+                                    "status": "PENDING"
                                 }
                                 """))
                 .andExpect(status().isCreated());
@@ -224,7 +249,8 @@ class SubtaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "title": "Review implementation"
+                                    "title": "Review implementation",
+                                    "status": "PENDING"
                                 }
                                 """))
                 .andExpect(status().isCreated())

@@ -46,7 +46,6 @@ Initial project setup with:
   - Filter tasks by status and user
   - Paginate task results
   - Update task status
-  - Use PENDING as the default status when none is provided
   - Set completedAt when a task is completed
   - Clear completedAt when a completed task is reopened
   - Prevent task completion while subtasks are unfinished
@@ -55,7 +54,6 @@ Initial project setup with:
   - List subtasks from a task
   - Paginate subtask results
   - Update subtask status
-  - Use PENDING as the default status when none is provided
   - Set completedAt when a subtask is completed
   - Clear completedAt when a completed subtask is reopened
   - Prevent completed tasks from having unfinished subtasks
@@ -575,8 +573,6 @@ Request body:
 }
 ```
 
-The `status` field is optional. When omitted, the task is created with `PENDING`.
-
 Successful response:
 
 ``` HTTP
@@ -752,8 +748,6 @@ Request body:
   "status": "PENDING"
 }
 ```
-
-The `status` field is optional. When omitted, the subtask is created with `PENDING`.
 
 Successful response:
 
@@ -953,7 +947,6 @@ Rules:
 
 - title is required
 - status is required
-- status defaults to PENDING when omitted during creation
 - createdAt is required
 - completedAt is set when status is COMPLETED
 - completedAt is cleared when status changes back to PENDING or IN_PROGRESS
@@ -982,7 +975,6 @@ Rules:
 
 - title is required
 - status is required
-- status defaults to PENDING when omitted during creation
 - createdAt is required
 - completedAt is set when status is COMPLETED
 - completedAt is cleared when status changes back to PENDING or IN_PROGRESS
