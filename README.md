@@ -258,7 +258,7 @@ Supported query parameters:
 | `userId` | User UUID |
 | `page` | Page number, starting at `0` |
 | `size` | Page size, maximum `100` |
-| `sort` | Sort expression in the format `property,direction`, for example `sort=createdAt,desc` |
+| `sort` | Sort expression in the format `property,direction`, for example `sort=createdAt,desc`. Supported properties: `id`, `title`, `description`, `status`, `createdAt`, `completedAt` |
 
 Update task status request:
 

@@ -86,6 +86,28 @@ class TaskFlowEndToEndTest {
     }
 
     @Test
+    void shouldListTasksFilteredOnlyByStatus() throws Exception {
+        String firstUserId = createUser("First Status User", "first.status@email.com");
+        String secondUserId = createUser("Second Status User", "second.status@email.com");
+
+        createTask(firstUserId, "First pending task", "PENDING");
+        createTask(firstUserId, "Completed task", "COMPLETED");
+        createTask(secondUserId, "Second pending task", "PENDING");
+
+        mockMvc.perform(get("/tasks")
+                        .param("status", "PENDING")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "title,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].title").value("First pending task"))
+                .andExpect(jsonPath("$.content[0].status").value("PENDING"))
+                .andExpect(jsonPath("$.content[1].title").value("Second pending task"))
+                .andExpect(jsonPath("$.content[1].status").value("PENDING"));
+    }
+
+    @Test
     void shouldReturnBadRequestWhenTaskSortParameterIsMalformed() throws Exception {
         String userId = createUser("Sort User", "sort.user@email.com");
 
