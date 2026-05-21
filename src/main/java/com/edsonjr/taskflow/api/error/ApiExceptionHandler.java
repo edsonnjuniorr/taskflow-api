@@ -2,12 +2,12 @@ package com.edsonjr.taskflow.api.error;
 
 import com.edsonjr.taskflow.exception.BusinessException;
 import com.edsonjr.taskflow.exception.ConflictException;
+import com.edsonjr.taskflow.exception.InvalidRequestException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +32,6 @@ public class ApiExceptionHandler {
     private static final String INVALID_REQUEST_MESSAGE = "Invalid request.";
     private static final String DATA_INTEGRITY_ERROR_MESSAGE = "Resource already exists or violates a unique constraint.";
     private static final String UNEXPECTED_ERROR_MESSAGE = "An unexpected error occurred.";
-    private static final String INVALID_SORT_EXPRESSION_MESSAGE_PART =
-            "must only contain property references or aliases used in the select clause";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiExceptionResponse> handleMethodArgumentNotValidException(
@@ -81,6 +79,29 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiExceptionResponse> handleHttpMessageNotReadableException(
             HttpServletRequest request
     ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ApiExceptionResponse response = ApiExceptionResponse.of(
+                status,
+                INVALID_REQUEST_MESSAGE,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<ApiExceptionResponse> handleInvalidRequestException(
+            InvalidRequestException exception,
+            HttpServletRequest request
+    ) {
+        LOGGER.warn(
+                "Invalid request while processing request. method={}, path={}, message={}",
+                request.getMethod(),
+                request.getRequestURI(),
+                exception.getMessage()
+        );
+
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
         ApiExceptionResponse response = ApiExceptionResponse.of(
@@ -141,33 +162,6 @@ public class ApiExceptionHandler {
         ApiExceptionResponse response = ApiExceptionResponse.of(
                 status,
                 DATA_INTEGRITY_ERROR_MESSAGE,
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.status(status).body(response);
-    }
-
-    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
-    public ResponseEntity<ApiExceptionResponse> handleInvalidDataAccessApiUsageException(
-            InvalidDataAccessApiUsageException exception,
-            HttpServletRequest request
-    ) {
-        if (!isInvalidSortExpression(exception)) {
-            return handleUnexpectedException(exception, request);
-        }
-
-        LOGGER.warn(
-                "Invalid sort expression while processing request. method={}, path={}, message={}",
-                request.getMethod(),
-                request.getRequestURI(),
-                exception.getMessage()
-        );
-
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-
-        ApiExceptionResponse response = ApiExceptionResponse.of(
-                status,
-                INVALID_REQUEST_MESSAGE,
                 request.getRequestURI()
         );
 
@@ -251,11 +245,5 @@ public class ApiExceptionHandler {
         }
 
         return UNEXPECTED_ERROR_MESSAGE;
-    }
-
-    private boolean isInvalidSortExpression(InvalidDataAccessApiUsageException exception) {
-        String message = exception.getMessage();
-
-        return message != null && message.contains(INVALID_SORT_EXPRESSION_MESSAGE_PART);
     }
 }

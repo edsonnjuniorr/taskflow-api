@@ -2,7 +2,7 @@
 
 RESTful API for internal task and subtask management.
 
-The project was built with Java 17, Spring Boot, PostgreSQL, Flyway, Docker and automated tests, following a layered architecture where API controllers depend on use case ports, application services implement business workflows, domain objects enforce core rules and API errors are standardized.
+The project was built with Java 17, Spring Boot, PostgreSQL, Flyway, Docker and automated tests, following a layered architecture where API controllers depend on service contracts, service implementations handle business workflows, domain objects enforce core rules and API errors are standardized.
 
 ## Features
 
@@ -192,7 +192,7 @@ Test coverage includes:
 
 - DTO validation tests
 - Domain model tests
-- Application service/use case business rule tests
+- Service implementation business rule tests
 - Controller tests with MockMvc
 - Persistence tests with H2
 - End-to-end API flow tests
@@ -247,7 +247,7 @@ Create task request:
 List tasks:
 
 ```http
-GET /tasks?status=PENDING&userId=b1ef8ab6-4be9-4487-8744-e1bedc43988c&page=0&size=20
+GET /tasks?status=PENDING&userId=b1ef8ab6-4be9-4487-8744-e1bedc43988c&page=0&size=20&sort=createdAt,desc
 ```
 
 Supported query parameters:

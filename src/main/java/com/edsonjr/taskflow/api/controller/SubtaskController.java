@@ -3,6 +3,7 @@ package com.edsonjr.taskflow.api.controller;
 import com.edsonjr.taskflow.api.dto.request.CreateSubtaskRequest;
 import com.edsonjr.taskflow.api.dto.request.UpdateSubtaskStatusRequest;
 import com.edsonjr.taskflow.api.dto.response.SubtaskResponse;
+import com.edsonjr.taskflow.api.validation.PageableSortValidator;
 import com.edsonjr.taskflow.domain.service.SubtaskService;
 import com.edsonjr.taskflow.domain.model.Subtask;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.springframework.data.domain.Sort.Direction.ASC;
@@ -23,6 +25,15 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 @Tag(name = "Subtasks", description = "Create, list and update subtasks linked to tasks.")
 @RestController
 public class SubtaskController {
+
+    private static final Set<String> SORT_PROPERTIES = Set.of(
+            "id",
+            "title",
+            "description",
+            "status",
+            "createdAt",
+            "completedAt"
+    );
 
     private final SubtaskService subtaskService;
 
@@ -50,6 +61,8 @@ public class SubtaskController {
             @PathVariable UUID taskId,
             @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = ASC) Pageable pageable
     ) {
+        PageableSortValidator.validate(pageable, SORT_PROPERTIES);
+
         Page<SubtaskResponse> response = subtaskService.listByTask(taskId, pageable)
                 .map(subtask -> SubtaskResponse.from(subtask, taskId));
 
