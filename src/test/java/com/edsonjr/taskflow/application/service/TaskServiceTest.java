@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow.domain.service;
+package com.edsonjr.taskflow.application.service;
 
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.model.Task;

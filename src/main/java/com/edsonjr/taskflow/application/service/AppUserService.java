@@ -1,5 +1,6 @@
-package com.edsonjr.taskflow.domain.service;
+package com.edsonjr.taskflow.application.service;
 
+import com.edsonjr.taskflow.application.usecase.AppUserUseCase;
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.repository.AppUserRepository;
 import com.edsonjr.taskflow.exception.EmailAlreadyExistsException;
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-public class AppUserService {
+public class AppUserService implements AppUserUseCase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
 
@@ -26,6 +27,7 @@ public class AppUserService {
     }
 
     @Transactional
+    @Override
     public AppUser create(String name, String email) {
         AppUser appUser = AppUser.create(name, email);
 
@@ -51,6 +53,7 @@ public class AppUserService {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public AppUser findById(UUID id) {
         return appUserRepository.findById(id)
                 .orElseThrow(() -> {

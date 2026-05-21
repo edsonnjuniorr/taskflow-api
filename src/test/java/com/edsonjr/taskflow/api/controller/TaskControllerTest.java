@@ -2,10 +2,10 @@ package com.edsonjr.taskflow.api.controller;
 
 import com.edsonjr.taskflow.api.error.ApiExceptionHandler;
 import com.edsonjr.taskflow.api.mapper.TaskMapper;
+import com.edsonjr.taskflow.application.usecase.TaskUseCase;
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
-import com.edsonjr.taskflow.domain.service.TaskService;
 import com.edsonjr.taskflow.exception.BusinessException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ class TaskControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private TaskService taskService;
+    private TaskUseCase taskUseCase;
 
     @Test
     void shouldReturnCreatedWhenCreateTaskWithValidPayload() throws Exception {
@@ -54,7 +54,7 @@ class TaskControllerTest {
         UUID userId = UUID.randomUUID();
         Task task = taskWithIds(taskId, "Implement task creation", "Create POST /tasks endpoint", IN_PROGRESS, userId);
 
-        when(taskService.create("Implement task creation", "Create POST /tasks endpoint", userId, IN_PROGRESS))
+        when(taskUseCase.create("Implement task creation", "Create POST /tasks endpoint", userId, IN_PROGRESS))
                 .thenReturn(task);
 
         String payload = """
@@ -78,8 +78,8 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.createdAt").exists())
                 .andExpect(jsonPath("$.userId").value(userId.toString()));
 
-        verify(taskService).create("Implement task creation", "Create POST /tasks endpoint", userId, IN_PROGRESS);
-        verifyNoMoreInteractions(taskService);
+        verify(taskUseCase).create("Implement task creation", "Create POST /tasks endpoint", userId, IN_PROGRESS);
+        verifyNoMoreInteractions(taskUseCase);
     }
 
     @Test
@@ -102,14 +102,14 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.fields[*].field").value(hasItem("userId")))
                 .andExpect(jsonPath("$.fields[*].field").value(hasItem("status")));
 
-        verifyNoInteractions(taskService);
+        verifyNoInteractions(taskUseCase);
     }
 
     @Test
     void shouldReturnNotFoundWhenTaskUserDoesNotExist() throws Exception {
         UUID userId = UUID.randomUUID();
 
-        when(taskService.create("Implement task creation", null, userId, PENDING))
+        when(taskUseCase.create("Implement task creation", null, userId, PENDING))
                 .thenThrow(new NotFoundException("User not found."));
 
         String payload = """
@@ -128,8 +128,8 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.message").value("User not found."));
 
-        verify(taskService).create("Implement task creation", null, userId, PENDING);
-        verifyNoMoreInteractions(taskService);
+        verify(taskUseCase).create("Implement task creation", null, userId, PENDING);
+        verifyNoMoreInteractions(taskUseCase);
     }
 
     @Test
@@ -138,7 +138,7 @@ class TaskControllerTest {
         UUID userId = UUID.randomUUID();
         Task task = taskWithIds(taskId, "Implement filters", null, COMPLETED, userId);
 
-        when(taskService.list(eq(COMPLETED), eq(userId), any(Pageable.class)))
+        when(taskUseCase.list(eq(COMPLETED), eq(userId), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(task)));
 
         mockMvc.perform(get("/tasks")
@@ -154,13 +154,13 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.content[0].userId").value(userId.toString()));
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(taskService).list(eq(COMPLETED), eq(userId), pageableCaptor.capture());
+        verify(taskUseCase).list(eq(COMPLETED), eq(userId), pageableCaptor.capture());
 
         Pageable pageable = pageableCaptor.getValue();
         assertThat(pageable.getPageNumber()).isEqualTo(1);
         assertThat(pageable.getPageSize()).isEqualTo(5);
 
-        verifyNoMoreInteractions(taskService);
+        verifyNoMoreInteractions(taskUseCase);
     }
 
     @Test
@@ -172,7 +172,7 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Invalid request."));
 
-        verifyNoInteractions(taskService);
+        verifyNoInteractions(taskUseCase);
     }
 
     @Test
@@ -181,7 +181,7 @@ class TaskControllerTest {
         UUID userId = UUID.randomUUID();
         Task task = taskWithIds(taskId, "Ship status update", null, COMPLETED, userId);
 
-        when(taskService.updateStatus(taskId, COMPLETED)).thenReturn(task);
+        when(taskUseCase.updateStatus(taskId, COMPLETED)).thenReturn(task);
 
         String payload = """
                 {
@@ -199,8 +199,8 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.completedAt").exists())
                 .andExpect(jsonPath("$.userId").value(userId.toString()));
 
-        verify(taskService).updateStatus(taskId, COMPLETED);
-        verifyNoMoreInteractions(taskService);
+        verify(taskUseCase).updateStatus(taskId, COMPLETED);
+        verifyNoMoreInteractions(taskUseCase);
     }
 
     @Test
@@ -214,14 +214,14 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.fields").isArray())
                 .andExpect(jsonPath("$.fields[*].field").value(hasItem("status")));
 
-        verifyNoInteractions(taskService);
+        verifyNoInteractions(taskUseCase);
     }
 
     @Test
     void shouldReturnUnprocessableContentWhenTaskHasUnfinishedSubtasks() throws Exception {
         UUID taskId = UUID.randomUUID();
 
-        when(taskService.updateStatus(taskId, COMPLETED))
+        when(taskUseCase.updateStatus(taskId, COMPLETED))
                 .thenThrow(new BusinessException("Task cannot be completed because it has unfinished subtasks."));
 
         String payload = """
@@ -238,8 +238,8 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.error").value("Unprocessable Content"))
                 .andExpect(jsonPath("$.message").value("Task cannot be completed because it has unfinished subtasks."));
 
-        verify(taskService).updateStatus(taskId, COMPLETED);
-        verifyNoMoreInteractions(taskService);
+        verify(taskUseCase).updateStatus(taskId, COMPLETED);
+        verifyNoMoreInteractions(taskUseCase);
     }
 
     private static Task taskWithIds(

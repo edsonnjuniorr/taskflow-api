@@ -1,5 +1,6 @@
-package com.edsonjr.taskflow.domain.service;
+package com.edsonjr.taskflow.application.service;
 
+import com.edsonjr.taskflow.application.usecase.TaskUseCase;
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
@@ -21,7 +22,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class TaskService {
+public class TaskService implements TaskUseCase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
 
@@ -45,6 +46,7 @@ public class TaskService {
     }
 
     @Transactional
+    @Override
     public Task create(String title, String description, UUID userId, TaskStatus status) {
         Objects.requireNonNull(status, "status is required");
 
@@ -75,6 +77,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public Page<Task> list(TaskStatus status, UUID userId, Pageable pageable) {
         Specification<Task> specification = TaskSpecifications.hasStatus(status)
                 .and(TaskSpecifications.belongsToUser(userId));
@@ -83,6 +86,7 @@ public class TaskService {
     }
 
     @Transactional
+    @Override
     public Task updateStatus(UUID taskId, TaskStatus status) {
         Objects.requireNonNull(status, "status is required");
 

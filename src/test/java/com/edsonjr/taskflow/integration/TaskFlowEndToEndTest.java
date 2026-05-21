@@ -86,6 +86,25 @@ class TaskFlowEndToEndTest {
     }
 
     @Test
+    void shouldReturnBadRequestWhenTaskSortParameterIsMalformed() throws Exception {
+        String userId = createUser("Sort User", "sort.user@email.com");
+
+        createTask(userId, "Sortable task", "PENDING");
+
+        mockMvc.perform(get("/tasks")
+                        .param("status", "PENDING")
+                        .param("userId", userId)
+                        .param("page", "0")
+                        .param("size", "5")
+                        .param("sort", "[\"asc\"]"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Invalid request."))
+                .andExpect(jsonPath("$.path").value("/tasks"));
+    }
+
+    @Test
     void shouldCreateUserTaskSubtaskAndOnlyCompleteTaskAfterAllSubtasksAreCompleted() throws Exception {
         String userResponse = mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)

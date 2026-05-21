@@ -1,5 +1,6 @@
-package com.edsonjr.taskflow.domain.service;
+package com.edsonjr.taskflow.application.service;
 
+import com.edsonjr.taskflow.application.usecase.SubtaskUseCase;
 import com.edsonjr.taskflow.domain.model.Subtask;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
@@ -18,7 +19,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class SubtaskService {
+public class SubtaskService implements SubtaskUseCase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubtaskService.class);
 
@@ -41,6 +42,7 @@ public class SubtaskService {
     }
 
     @Transactional
+    @Override
     public Subtask create(UUID taskId, String title, String description, TaskStatus status) {
         Objects.requireNonNull(status, "status is required");
 
@@ -76,6 +78,7 @@ public class SubtaskService {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public Page<Subtask> listByTask(UUID taskId, Pageable pageable) {
         if (!taskRepository.existsById(taskId)) {
             LOGGER.debug("Subtask listing rejected because task was not found. taskId={}", taskId);
@@ -87,6 +90,7 @@ public class SubtaskService {
     }
 
     @Transactional
+    @Override
     public Subtask updateStatus(UUID subtaskId, TaskStatus status) {
         Objects.requireNonNull(status, "status is required");
 
