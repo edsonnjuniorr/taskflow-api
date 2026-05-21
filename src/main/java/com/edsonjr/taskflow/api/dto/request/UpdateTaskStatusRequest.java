@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow.api.dto.task;
+package com.edsonjr.taskflow.api.dto.request;
 
 import com.edsonjr.taskflow.domain.model.TaskStatus;
 import jakarta.validation.constraints.NotNull;

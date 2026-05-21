@@ -1,10 +1,10 @@
 package com.edsonjr.taskflow.api.controller;
 
-import com.edsonjr.taskflow.api.dto.task.CreateTaskRequest;
-import com.edsonjr.taskflow.api.dto.task.TaskResponse;
-import com.edsonjr.taskflow.api.dto.task.UpdateTaskStatusRequest;
+import com.edsonjr.taskflow.api.dto.request.CreateTaskRequest;
+import com.edsonjr.taskflow.api.dto.response.TaskResponse;
+import com.edsonjr.taskflow.api.dto.request.UpdateTaskStatusRequest;
 import com.edsonjr.taskflow.api.mapper.TaskMapper;
-import com.edsonjr.taskflow.application.usecase.TaskUseCase;
+import com.edsonjr.taskflow.domain.service.TaskService;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,17 +27,17 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @RequestMapping("/tasks")
 public class TaskController {
 
-    private final TaskUseCase taskUseCase;
+    private final TaskService taskService;
     private final TaskMapper taskMapper;
 
-    public TaskController(TaskUseCase taskUseCase, TaskMapper taskMapper) {
-        this.taskUseCase = taskUseCase;
+    public TaskController(TaskService taskService, TaskMapper taskMapper) {
+        this.taskService = taskService;
         this.taskMapper = taskMapper;
     }
 
     @PostMapping
     public ResponseEntity<TaskResponse> create(@Valid @RequestBody CreateTaskRequest request) {
-        Task task = taskUseCase.create(
+        Task task = taskService.create(
                 request.title(),
                 request.description(),
                 request.userId(),
@@ -56,7 +56,7 @@ public class TaskController {
             @RequestParam(required = false) UUID userId,
             @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = DESC) Pageable pageable
     ) {
-        Page<TaskResponse> tasks = taskUseCase.list(status, userId, pageable)
+        Page<TaskResponse> tasks = taskService.list(status, userId, pageable)
                 .map(taskMapper::toResponse);
 
         return new PagedModel<>(tasks);
@@ -67,7 +67,7 @@ public class TaskController {
             @PathVariable UUID id,
             @Valid @RequestBody UpdateTaskStatusRequest request
     ) {
-        Task task = taskUseCase.updateStatus(id, request.status());
+        Task task = taskService.updateStatus(id, request.status());
 
         return taskMapper.toResponse(task);
     }

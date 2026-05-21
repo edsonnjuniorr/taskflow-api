@@ -1,6 +1,6 @@
-package com.edsonjr.taskflow.application.service;
+package com.edsonjr.taskflow.domain.service.impl;
 
-import com.edsonjr.taskflow.application.usecase.AppUserUseCase;
+import com.edsonjr.taskflow.domain.service.AppUserService;
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.repository.AppUserRepository;
 import com.edsonjr.taskflow.exception.EmailAlreadyExistsException;
@@ -14,15 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-public class AppUserService implements AppUserUseCase {
+public class AppUserServiceImpl implements AppUserService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AppUserService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppUserServiceImpl.class);
 
     private static final String EMAIL_ALREADY_EXISTS_MESSAGE = "Unable to create user with provided data.";
 
     private final AppUserRepository appUserRepository;
 
-    public AppUserService(AppUserRepository appUserRepository) {
+    public AppUserServiceImpl(AppUserRepository appUserRepository) {
         this.appUserRepository = appUserRepository;
     }
 

@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow.application.service;
+package com.edsonjr.taskflow.domain.service;
 
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.model.Subtask;
@@ -6,6 +6,7 @@ import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
 import com.edsonjr.taskflow.domain.repository.SubtaskRepository;
 import com.edsonjr.taskflow.domain.repository.TaskRepository;
+import com.edsonjr.taskflow.domain.service.impl.SubtaskServiceImpl;
 import com.edsonjr.taskflow.exception.BusinessException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class SubtaskServiceTest {
+class SubtaskServiceImplTest {
 
     @Mock
     private SubtaskRepository subtaskRepository;
@@ -37,7 +38,7 @@ class SubtaskServiceTest {
     private TaskRepository taskRepository;
 
     @InjectMocks
-    private SubtaskService subtaskService;
+    private SubtaskServiceImpl subtaskServiceImpl;
 
     @Test
     void shouldCreateSubtaskWithPendingStatus() {
@@ -47,7 +48,7 @@ class SubtaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
         when(subtaskRepository.save(any(Subtask.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Subtask subtask = subtaskService.create(
+        Subtask subtask = subtaskServiceImpl.create(
                 taskId,
                 "Create unit tests",
                 "Cover service behavior",
@@ -69,7 +70,7 @@ class SubtaskServiceTest {
     void shouldThrowExceptionWhenCreatingSubtaskWithoutStatus() {
         UUID taskId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> subtaskService.create(
+        assertThatThrownBy(() -> subtaskServiceImpl.create(
                 taskId,
                 "Create tests",
                 "Description",
@@ -89,7 +90,7 @@ class SubtaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
         when(subtaskRepository.save(any(Subtask.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Subtask subtask = subtaskService.create(
+        Subtask subtask = subtaskServiceImpl.create(
                 taskId,
                 "Review implementation",
                 "Review service code",
@@ -112,7 +113,7 @@ class SubtaskServiceTest {
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> subtaskService.create(
+        assertThatThrownBy(() -> subtaskServiceImpl.create(
                 taskId,
                 "Create tests",
                 "Description",
@@ -132,7 +133,7 @@ class SubtaskServiceTest {
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
 
-        assertThatThrownBy(() -> subtaskService.create(
+        assertThatThrownBy(() -> subtaskServiceImpl.create(
                 taskId,
                 "Create tests",
                 "Description",
@@ -152,7 +153,7 @@ class SubtaskServiceTest {
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
 
-        assertThatThrownBy(() -> subtaskService.create(
+        assertThatThrownBy(() -> subtaskServiceImpl.create(
                 taskId,
                 "Create tests",
                 "Description",
@@ -173,7 +174,7 @@ class SubtaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
         when(subtaskRepository.save(any(Subtask.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Subtask subtask = subtaskService.create(
+        Subtask subtask = subtaskServiceImpl.create(
                 taskId,
                 "Review implementation",
                 "Review service code",
@@ -200,7 +201,7 @@ class SubtaskServiceTest {
         when(subtaskRepository.findByTask_Id(taskId, pageable))
                 .thenReturn(new PageImpl<>(List.of(firstSubtask, secondSubtask), pageable, 2));
 
-        Page<Subtask> subtasks = subtaskService.listByTask(taskId, pageable);
+        Page<Subtask> subtasks = subtaskServiceImpl.listByTask(taskId, pageable);
 
         assertThat(subtasks.getContent())
                 .hasSize(2)
@@ -217,7 +218,7 @@ class SubtaskServiceTest {
 
         when(taskRepository.existsById(taskId)).thenReturn(false);
 
-        assertThatThrownBy(() -> subtaskService.listByTask(taskId, PageRequest.of(0, 20)))
+        assertThatThrownBy(() -> subtaskServiceImpl.listByTask(taskId, PageRequest.of(0, 20)))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Task not found.");
 
@@ -234,7 +235,7 @@ class SubtaskServiceTest {
         when(subtaskRepository.findByIdWithTask(subtaskId)).thenReturn(Optional.of(subtask));
         when(subtaskRepository.save(any(Subtask.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Subtask updatedSubtask = subtaskService.updateStatus(subtaskId, TaskStatus.COMPLETED);
+        Subtask updatedSubtask = subtaskServiceImpl.updateStatus(subtaskId, TaskStatus.COMPLETED);
 
         assertThat(updatedSubtask.getStatus()).isEqualTo(TaskStatus.COMPLETED);
         assertThat(updatedSubtask.getCompletedAt()).isNotNull();
@@ -251,7 +252,7 @@ class SubtaskServiceTest {
     void shouldThrowExceptionWhenUpdatingSubtaskWithoutStatus() {
         UUID subtaskId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> subtaskService.updateStatus(subtaskId, null))
+        assertThatThrownBy(() -> subtaskServiceImpl.updateStatus(subtaskId, null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("status is required");
 
@@ -266,7 +267,7 @@ class SubtaskServiceTest {
 
         when(subtaskRepository.findByIdWithTask(subtaskId)).thenReturn(Optional.of(subtask));
 
-        assertThatThrownBy(() -> subtaskService.updateStatus(subtaskId, TaskStatus.PENDING))
+        assertThatThrownBy(() -> subtaskServiceImpl.updateStatus(subtaskId, TaskStatus.PENDING))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Cannot update subtask to unfinished status when task is completed.");
 
@@ -283,7 +284,7 @@ class SubtaskServiceTest {
         when(subtaskRepository.findByIdWithTask(subtaskId)).thenReturn(Optional.of(subtask));
         when(subtaskRepository.save(any(Subtask.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Subtask updatedSubtask = subtaskService.updateStatus(subtaskId, TaskStatus.COMPLETED);
+        Subtask updatedSubtask = subtaskServiceImpl.updateStatus(subtaskId, TaskStatus.COMPLETED);
 
         assertThat(updatedSubtask.getStatus()).isEqualTo(TaskStatus.COMPLETED);
         assertThat(updatedSubtask.getCompletedAt()).isNotNull();
@@ -298,7 +299,7 @@ class SubtaskServiceTest {
 
         when(subtaskRepository.findByIdWithTask(subtaskId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> subtaskService.updateStatus(subtaskId, TaskStatus.COMPLETED))
+        assertThatThrownBy(() -> subtaskServiceImpl.updateStatus(subtaskId, TaskStatus.COMPLETED))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Subtask not found.");
 

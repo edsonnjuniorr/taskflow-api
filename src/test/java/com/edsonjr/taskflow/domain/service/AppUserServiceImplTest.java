@@ -1,7 +1,8 @@
-package com.edsonjr.taskflow.application.service;
+package com.edsonjr.taskflow.domain.service;
 
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.repository.AppUserRepository;
+import com.edsonjr.taskflow.domain.service.impl.AppUserServiceImpl;
 import com.edsonjr.taskflow.exception.EmailAlreadyExistsException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -21,13 +22,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AppUserServiceTest {
+class AppUserServiceImplTest {
 
     @Mock
     private AppUserRepository appUserRepository;
 
     @InjectMocks
-    private AppUserService appUserService;
+    private AppUserServiceImpl appUserServiceImpl;
 
     @Test
     void shouldCreateAppUserWhenNameAndEmailAreValid() {
@@ -43,7 +44,7 @@ class AppUserServiceTest {
                     return appUser;
                 });
 
-        AppUser createdUser = appUserService.create("John Doe", "john.doe@email.com");
+        AppUser createdUser = appUserServiceImpl.create("John Doe", "john.doe@email.com");
 
         assertThat(createdUser.getId()).isEqualTo(userId);
         assertThat(createdUser.getName()).isEqualTo("John Doe");
@@ -66,7 +67,7 @@ class AppUserServiceTest {
         when(appUserRepository.existsByEmailIgnoreCase("john.doe@email.com"))
                 .thenReturn(true);
 
-        assertThatThrownBy(() -> appUserService.create("John Doe", "john.doe@email.com"))
+        assertThatThrownBy(() -> appUserServiceImpl.create("John Doe", "john.doe@email.com"))
                 .isInstanceOf(EmailAlreadyExistsException.class)
                 .hasMessage("Unable to create user with provided data.");
 
@@ -83,7 +84,7 @@ class AppUserServiceTest {
         when(appUserRepository.saveAndFlush(any(AppUser.class)))
                 .thenThrow(new DataIntegrityViolationException("Unique constraint violation"));
 
-        assertThatThrownBy(() -> appUserService.create("John Doe", "john.doe@email.com"))
+        assertThatThrownBy(() -> appUserServiceImpl.create("John Doe", "john.doe@email.com"))
                 .isInstanceOf(EmailAlreadyExistsException.class)
                 .hasMessage("Unable to create user with provided data.");
 
@@ -100,7 +101,7 @@ class AppUserServiceTest {
 
         when(appUserRepository.findById(userId)).thenReturn(Optional.of(appUser));
 
-        AppUser foundUser = appUserService.findById(userId);
+        AppUser foundUser = appUserServiceImpl.findById(userId);
 
         assertThat(foundUser.getId()).isEqualTo(userId);
         assertThat(foundUser.getName()).isEqualTo("John Doe");
@@ -116,7 +117,7 @@ class AppUserServiceTest {
 
         when(appUserRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> appUserService.findById(userId))
+        assertThatThrownBy(() -> appUserServiceImpl.findById(userId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("User not found.");
 

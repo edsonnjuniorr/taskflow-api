@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow.api.dto.task;
+package com.edsonjr.taskflow.api.dto.response;
 
 import com.edsonjr.taskflow.domain.model.TaskStatus;
 

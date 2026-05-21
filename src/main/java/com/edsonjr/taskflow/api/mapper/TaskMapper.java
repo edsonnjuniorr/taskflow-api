@@ -1,6 +1,6 @@
 package com.edsonjr.taskflow.api.mapper;
 
-import com.edsonjr.taskflow.api.dto.task.TaskResponse;
+import com.edsonjr.taskflow.api.dto.response.TaskResponse;
 import com.edsonjr.taskflow.domain.model.Task;
 import org.springframework.stereotype.Component;
 

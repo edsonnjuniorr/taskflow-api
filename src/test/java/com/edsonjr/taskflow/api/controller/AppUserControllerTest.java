@@ -2,8 +2,8 @@ package com.edsonjr.taskflow.api.controller;
 
 import com.edsonjr.taskflow.api.error.ApiExceptionHandler;
 import com.edsonjr.taskflow.api.mapper.AppUserMapper;
-import com.edsonjr.taskflow.application.usecase.AppUserUseCase;
 import com.edsonjr.taskflow.domain.model.AppUser;
+import com.edsonjr.taskflow.domain.service.AppUserService;
 import com.edsonjr.taskflow.exception.EmailAlreadyExistsException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class AppUserControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AppUserUseCase appUserUseCase;
+    private AppUserService appUserService;
 
     @Test
     void shouldReturnCreatedWhenCreateAppUserWithValidPayload() throws Exception {
@@ -43,7 +43,7 @@ class AppUserControllerTest {
         AppUser appUser = AppUser.create("John Doe", "john.doe@email.com");
         ReflectionTestUtils.setField(appUser, "id", userId);
 
-        when(appUserUseCase.create("John Doe", "john.doe@email.com"))
+        when(appUserService.create("John Doe", "john.doe@email.com"))
                 .thenReturn(appUser);
 
         String payload = """
@@ -62,8 +62,8 @@ class AppUserControllerTest {
                 .andExpect(jsonPath("$.name").value("John Doe"))
                 .andExpect(jsonPath("$.email").value("john.doe@email.com"));
 
-        verify(appUserUseCase).create("John Doe", "john.doe@email.com");
-        verifyNoMoreInteractions(appUserUseCase);
+        verify(appUserService).create("John Doe", "john.doe@email.com");
+        verifyNoMoreInteractions(appUserService);
     }
 
     @Test
@@ -86,7 +86,7 @@ class AppUserControllerTest {
                 .andExpect(jsonPath("$.fields[*].field").value(hasItem("name")))
                 .andExpect(jsonPath("$.fields[*].field").value(hasItem("email")));
 
-        verifyNoInteractions(appUserUseCase);
+        verifyNoInteractions(appUserService);
     }
 
     @Test
@@ -111,12 +111,12 @@ class AppUserControllerTest {
                 .andExpect(jsonPath("$.fields[*].field").value(hasItem("name")))
                 .andExpect(jsonPath("$.fields[*].field").value(hasItem("email")));
 
-        verifyNoInteractions(appUserUseCase);
+        verifyNoInteractions(appUserService);
     }
 
     @Test
     void shouldReturnConflictWhenEmailAlreadyExists() throws Exception {
-        when(appUserUseCase.create("John Doe", "john.doe@email.com"))
+        when(appUserService.create("John Doe", "john.doe@email.com"))
                 .thenThrow(new EmailAlreadyExistsException("Unable to create user with provided data."));
 
         String payload = """
@@ -134,8 +134,8 @@ class AppUserControllerTest {
                 .andExpect(jsonPath("$.error").value("Conflict"))
                 .andExpect(jsonPath("$.message").value("Unable to create user with provided data."));
 
-        verify(appUserUseCase).create("John Doe", "john.doe@email.com");
-        verifyNoMoreInteractions(appUserUseCase);
+        verify(appUserService).create("John Doe", "john.doe@email.com");
+        verifyNoMoreInteractions(appUserService);
     }
 
     @Test
@@ -145,7 +145,7 @@ class AppUserControllerTest {
         AppUser appUser = AppUser.create("John Doe", "john.doe@email.com");
         ReflectionTestUtils.setField(appUser, "id", userId);
 
-        when(appUserUseCase.findById(userId)).thenReturn(appUser);
+        when(appUserService.findById(userId)).thenReturn(appUser);
 
         mockMvc.perform(get("/users/{id}", userId))
                 .andExpect(status().isOk())
@@ -153,15 +153,15 @@ class AppUserControllerTest {
                 .andExpect(jsonPath("$.name").value("John Doe"))
                 .andExpect(jsonPath("$.email").value("john.doe@email.com"));
 
-        verify(appUserUseCase).findById(userId);
-        verifyNoMoreInteractions(appUserUseCase);
+        verify(appUserService).findById(userId);
+        verifyNoMoreInteractions(appUserService);
     }
 
     @Test
     void shouldReturnNotFoundWhenAppUserDoesNotExist() throws Exception {
         UUID userId = UUID.randomUUID();
 
-        when(appUserUseCase.findById(userId))
+        when(appUserService.findById(userId))
                 .thenThrow(new NotFoundException("User not found."));
 
         mockMvc.perform(get("/users/{id}", userId))
@@ -170,8 +170,8 @@ class AppUserControllerTest {
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.message").value("User not found."));
 
-        verify(appUserUseCase).findById(userId);
-        verifyNoMoreInteractions(appUserUseCase);
+        verify(appUserService).findById(userId);
+        verifyNoMoreInteractions(appUserService);
     }
 
     @Test
@@ -182,6 +182,6 @@ class AppUserControllerTest {
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Invalid request."));
 
-        verifyNoInteractions(appUserUseCase);
+        verifyNoInteractions(appUserService);
     }
 }

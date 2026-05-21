@@ -1,6 +1,6 @@
-package com.edsonjr.taskflow.application.service;
+package com.edsonjr.taskflow.domain.service.impl;
 
-import com.edsonjr.taskflow.application.usecase.TaskUseCase;
+import com.edsonjr.taskflow.domain.service.TaskService;
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
@@ -22,9 +22,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class TaskService implements TaskUseCase {
+public class TaskServiceImpl implements TaskService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskServiceImpl.class);
 
     private static final String USER_NOT_FOUND_MESSAGE = "User not found.";
     private static final String TASK_NOT_FOUND_MESSAGE = "Task not found.";
@@ -35,7 +35,7 @@ public class TaskService implements TaskUseCase {
     private final AppUserRepository appUserRepository;
     private final SubtaskRepository subtaskRepository;
 
-    public TaskService(
+    public TaskServiceImpl(
             TaskRepository taskRepository,
             AppUserRepository appUserRepository,
             SubtaskRepository subtaskRepository

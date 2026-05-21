@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow.application.usecase;
+package com.edsonjr.taskflow.domain.service;
 
 import com.edsonjr.taskflow.domain.model.Subtask;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
-public interface SubtaskUseCase {
+public interface SubtaskService {
 
     Subtask create(UUID taskId, String title, String description, TaskStatus status);
 

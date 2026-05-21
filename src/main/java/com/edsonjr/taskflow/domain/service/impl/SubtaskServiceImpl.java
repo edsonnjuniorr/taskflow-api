@@ -1,6 +1,6 @@
-package com.edsonjr.taskflow.application.service;
+package com.edsonjr.taskflow.domain.service.impl;
 
-import com.edsonjr.taskflow.application.usecase.SubtaskUseCase;
+import com.edsonjr.taskflow.domain.service.SubtaskService;
 import com.edsonjr.taskflow.domain.model.Subtask;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
@@ -19,9 +19,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class SubtaskService implements SubtaskUseCase {
+public class SubtaskServiceImpl implements SubtaskService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SubtaskService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SubtaskServiceImpl.class);
 
     private static final String TASK_NOT_FOUND_MESSAGE = "Task not found.";
     private static final String SUBTASK_NOT_FOUND_MESSAGE = "Subtask not found.";
@@ -33,7 +33,7 @@ public class SubtaskService implements SubtaskUseCase {
     private final SubtaskRepository subtaskRepository;
     private final TaskRepository taskRepository;
 
-    public SubtaskService(
+    public SubtaskServiceImpl(
             SubtaskRepository subtaskRepository,
             TaskRepository taskRepository
     ) {

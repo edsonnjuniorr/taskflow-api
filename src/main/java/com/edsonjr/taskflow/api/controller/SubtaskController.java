@@ -3,7 +3,7 @@ package com.edsonjr.taskflow.api.controller;
 import com.edsonjr.taskflow.api.dto.request.CreateSubtaskRequest;
 import com.edsonjr.taskflow.api.dto.request.UpdateSubtaskStatusRequest;
 import com.edsonjr.taskflow.api.dto.response.SubtaskResponse;
-import com.edsonjr.taskflow.application.usecase.SubtaskUseCase;
+import com.edsonjr.taskflow.domain.service.SubtaskService;
 import com.edsonjr.taskflow.domain.model.Subtask;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,10 +24,10 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 @RestController
 public class SubtaskController {
 
-    private final SubtaskUseCase subtaskUseCase;
+    private final SubtaskService subtaskService;
 
-    public SubtaskController(SubtaskUseCase subtaskUseCase) {
-        this.subtaskUseCase = subtaskUseCase;
+    public SubtaskController(SubtaskService subtaskService) {
+        this.subtaskService = subtaskService;
     }
 
     @PostMapping("/tasks/{taskId}/subtasks")
@@ -35,7 +35,7 @@ public class SubtaskController {
             @PathVariable UUID taskId,
             @Valid @RequestBody CreateSubtaskRequest request
     ) {
-        Subtask subtask = subtaskUseCase.create(
+        Subtask subtask = subtaskService.create(
                 taskId,
                 request.title(),
                 request.description(),
@@ -50,7 +50,7 @@ public class SubtaskController {
             @PathVariable UUID taskId,
             @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = ASC) Pageable pageable
     ) {
-        Page<SubtaskResponse> response = subtaskUseCase.listByTask(taskId, pageable)
+        Page<SubtaskResponse> response = subtaskService.listByTask(taskId, pageable)
                 .map(subtask -> SubtaskResponse.from(subtask, taskId));
 
         return ResponseEntity.ok(new PagedModel<>(response));
@@ -61,7 +61,7 @@ public class SubtaskController {
             @PathVariable UUID subtaskId,
             @Valid @RequestBody UpdateSubtaskStatusRequest request
     ) {
-        Subtask subtask = subtaskUseCase.updateStatus(subtaskId, request.status());
+        Subtask subtask = subtaskService.updateStatus(subtaskId, request.status());
 
         return ResponseEntity.ok(SubtaskResponse.from(subtask));
     }

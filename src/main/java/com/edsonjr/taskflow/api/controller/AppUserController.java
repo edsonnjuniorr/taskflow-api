@@ -3,7 +3,7 @@ package com.edsonjr.taskflow.api.controller;
 import com.edsonjr.taskflow.api.dto.request.CreateAppUserRequest;
 import com.edsonjr.taskflow.api.dto.response.AppUserResponse;
 import com.edsonjr.taskflow.api.mapper.AppUserMapper;
-import com.edsonjr.taskflow.application.usecase.AppUserUseCase;
+import com.edsonjr.taskflow.domain.service.AppUserService;
 import com.edsonjr.taskflow.domain.model.AppUser;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -18,14 +18,14 @@ import java.util.UUID;
 @RequestMapping("/users")
 public class AppUserController {
 
-    private final AppUserUseCase appUserUseCase;
+    private final AppUserService appUserService;
     private final AppUserMapper appUserMapper;
 
     public AppUserController(
-            AppUserUseCase appUserUseCase,
+            AppUserService appUserService,
             AppUserMapper appUserMapper
     ) {
-        this.appUserUseCase = appUserUseCase;
+        this.appUserService = appUserService;
         this.appUserMapper = appUserMapper;
     }
 
@@ -33,7 +33,7 @@ public class AppUserController {
     public ResponseEntity<AppUserResponse> create(
             @Valid @RequestBody CreateAppUserRequest request
     ) {
-        AppUser createdUser = appUserUseCase.create(request.name(), request.email());
+        AppUser createdUser = appUserService.create(request.name(), request.email());
         AppUserResponse response = appUserMapper.toResponse(createdUser);
 
         URI location = URI.create("/users/" + response.id());
@@ -43,7 +43,7 @@ public class AppUserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AppUserResponse> findById(@PathVariable UUID id) {
-        AppUser appUser = appUserUseCase.findById(id);
+        AppUser appUser = appUserService.findById(id);
 
         return ResponseEntity.ok(appUserMapper.toResponse(appUser));
     }
