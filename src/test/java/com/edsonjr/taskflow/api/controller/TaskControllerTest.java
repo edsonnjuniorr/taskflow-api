@@ -2,10 +2,10 @@ package com.edsonjr.taskflow.api.controller;
 
 import com.edsonjr.taskflow.api.error.ApiExceptionHandler;
 import com.edsonjr.taskflow.api.mapper.TaskMapper;
+import com.edsonjr.taskflow.domain.service.TaskService;
 import com.edsonjr.taskflow.domain.model.AppUser;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
-import com.edsonjr.taskflow.domain.service.TaskService;
 import com.edsonjr.taskflow.exception.BusinessException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import org.junit.jupiter.api.Test;

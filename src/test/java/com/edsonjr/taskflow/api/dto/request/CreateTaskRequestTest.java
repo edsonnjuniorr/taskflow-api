@@ -1,4 +1,4 @@
-package com.edsonjr.taskflow.api.dto.task;
+package com.edsonjr.taskflow.api.dto.request;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;

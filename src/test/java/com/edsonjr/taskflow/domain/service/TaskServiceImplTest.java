@@ -5,6 +5,7 @@ import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.repository.AppUserRepository;
 import com.edsonjr.taskflow.domain.repository.SubtaskRepository;
 import com.edsonjr.taskflow.domain.repository.TaskRepository;
+import com.edsonjr.taskflow.domain.service.impl.TaskServiceImpl;
 import com.edsonjr.taskflow.exception.BusinessException;
 import com.edsonjr.taskflow.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,11 +28,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-class TaskServiceTest {
+class TaskServiceImplTest {
 
     private TaskRepository taskRepository;
     private AppUserRepository appUserRepository;
-    private TaskService taskService;
+    private TaskServiceImpl taskServiceImpl;
     private SubtaskRepository subtaskRepository;
 
     @BeforeEach
@@ -40,7 +41,7 @@ class TaskServiceTest {
         appUserRepository = mock(AppUserRepository.class);
         subtaskRepository = mock(SubtaskRepository.class);
 
-        taskService = new TaskService(
+        taskServiceImpl = new TaskServiceImpl(
                 taskRepository,
                 appUserRepository,
                 subtaskRepository
@@ -54,7 +55,7 @@ class TaskServiceTest {
         when(appUserRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Task createdTask = taskService.create(
+        Task createdTask = taskServiceImpl.create(
                 "Implement task creation",
                 "Create POST /tarefas endpoint",
                 user.getId(),
@@ -80,7 +81,7 @@ class TaskServiceTest {
     void shouldThrowExceptionWhenCreatingTaskWithoutStatus() {
         UUID userId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> taskService.create(
+        assertThatThrownBy(() -> taskServiceImpl.create(
                 "Implement task creation",
                 "Create POST /tarefas endpoint",
                 userId,
@@ -99,7 +100,7 @@ class TaskServiceTest {
         when(appUserRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        taskService.create(
+        taskServiceImpl.create(
                 "Finish task module",
                 null,
                 user.getId(),
@@ -122,7 +123,7 @@ class TaskServiceTest {
 
         when(appUserRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> taskService.create("Implement task creation", null, userId, PENDING))
+        assertThatThrownBy(() -> taskServiceImpl.create("Implement task creation", null, userId, PENDING))
                 .isInstanceOf(NotFoundException.class);
 
         verify(taskRepository, never()).save(any(Task.class));
@@ -137,7 +138,7 @@ class TaskServiceTest {
         when(taskRepository.findAll(anyTaskSpecification(), eq(pageable)))
                 .thenReturn(new PageImpl<>(List.of(task), pageable, 1));
 
-        var tasks = taskService.list(PENDING, user.getId(), pageable);
+        var tasks = taskServiceImpl.list(PENDING, user.getId(), pageable);
 
         assertThat(tasks.getContent()).containsExactly(task);
 
@@ -153,7 +154,7 @@ class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
         when(subtaskRepository.existsByTask_IdAndStatusNot(taskId, COMPLETED)).thenReturn(false);
 
-        Task updatedTask = taskService.updateStatus(taskId, COMPLETED);
+        Task updatedTask = taskServiceImpl.updateStatus(taskId, COMPLETED);
 
         assertThat(updatedTask).isSameAs(task);
         assertThat(task.getStatus()).isEqualTo(COMPLETED);
@@ -172,7 +173,7 @@ class TaskServiceTest {
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
 
-        Task updatedTask = taskService.updateStatus(taskId, IN_PROGRESS);
+        Task updatedTask = taskServiceImpl.updateStatus(taskId, IN_PROGRESS);
 
         assertThat(updatedTask).isSameAs(task);
         assertThat(task.getStatus()).isEqualTo(IN_PROGRESS);
@@ -189,7 +190,7 @@ class TaskServiceTest {
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> taskService.updateStatus(taskId, COMPLETED))
+        assertThatThrownBy(() -> taskServiceImpl.updateStatus(taskId, COMPLETED))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Task not found.");
 
@@ -207,7 +208,7 @@ class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
         when(subtaskRepository.existsByTask_IdAndStatusNot(taskId, COMPLETED)).thenReturn(true);
 
-        assertThatThrownBy(() -> taskService.updateStatus(taskId, COMPLETED))
+        assertThatThrownBy(() -> taskServiceImpl.updateStatus(taskId, COMPLETED))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Task cannot be completed because it has unfinished subtasks.");
 

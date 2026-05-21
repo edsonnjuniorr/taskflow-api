@@ -1,14 +1,15 @@
 package com.edsonjr.taskflow.api.controller;
 
-import com.edsonjr.taskflow.api.dto.task.CreateTaskRequest;
-import com.edsonjr.taskflow.api.dto.task.TaskResponse;
-import com.edsonjr.taskflow.api.dto.task.UpdateTaskStatusRequest;
+import com.edsonjr.taskflow.api.dto.request.CreateTaskRequest;
+import com.edsonjr.taskflow.api.dto.response.TaskResponse;
+import com.edsonjr.taskflow.api.dto.request.UpdateTaskStatusRequest;
 import com.edsonjr.taskflow.api.mapper.TaskMapper;
+import com.edsonjr.taskflow.domain.service.TaskService;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
-import com.edsonjr.taskflow.domain.service.TaskService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
@@ -53,7 +54,7 @@ public class TaskController {
     public PagedModel<TaskResponse> list(
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) UUID userId,
-            @PageableDefault(size = 20, sort = "createdAt", direction = DESC) Pageable pageable
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = DESC) Pageable pageable
     ) {
         Page<TaskResponse> tasks = taskService.list(status, userId, pageable)
                 .map(taskMapper::toResponse);

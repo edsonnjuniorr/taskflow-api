@@ -3,10 +3,11 @@ package com.edsonjr.taskflow.api.controller;
 import com.edsonjr.taskflow.api.dto.request.CreateSubtaskRequest;
 import com.edsonjr.taskflow.api.dto.request.UpdateSubtaskStatusRequest;
 import com.edsonjr.taskflow.api.dto.response.SubtaskResponse;
-import com.edsonjr.taskflow.domain.model.Subtask;
 import com.edsonjr.taskflow.domain.service.SubtaskService;
+import com.edsonjr.taskflow.domain.model.Subtask;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
@@ -47,7 +48,7 @@ public class SubtaskController {
     @GetMapping("/tasks/{taskId}/subtasks")
     public ResponseEntity<PagedModel<SubtaskResponse>> listByTask(
             @PathVariable UUID taskId,
-            @PageableDefault(size = 20, sort = "createdAt", direction = ASC) Pageable pageable
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = ASC) Pageable pageable
     ) {
         Page<SubtaskResponse> response = subtaskService.listByTask(taskId, pageable)
                 .map(subtask -> SubtaskResponse.from(subtask, taskId));
