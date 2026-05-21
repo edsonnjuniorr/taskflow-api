@@ -4,6 +4,7 @@ import com.edsonjr.taskflow.api.dto.request.CreateTaskRequest;
 import com.edsonjr.taskflow.api.dto.response.TaskResponse;
 import com.edsonjr.taskflow.api.dto.request.UpdateTaskStatusRequest;
 import com.edsonjr.taskflow.api.mapper.TaskMapper;
+import com.edsonjr.taskflow.api.validation.PageableSortValidator;
 import com.edsonjr.taskflow.domain.service.TaskService;
 import com.edsonjr.taskflow.domain.model.Task;
 import com.edsonjr.taskflow.domain.model.TaskStatus;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.springframework.data.domain.Sort.Direction.DESC;
@@ -26,6 +28,15 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
+
+    private static final Set<String> SORT_PROPERTIES = Set.of(
+            "id",
+            "title",
+            "description",
+            "status",
+            "createdAt",
+            "completedAt"
+    );
 
     private final TaskService taskService;
     private final TaskMapper taskMapper;
@@ -56,6 +67,8 @@ public class TaskController {
             @RequestParam(required = false) UUID userId,
             @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = DESC) Pageable pageable
     ) {
+        PageableSortValidator.validate(pageable, SORT_PROPERTIES);
+
         Page<TaskResponse> tasks = taskService.list(status, userId, pageable)
                 .map(taskMapper::toResponse);
 
