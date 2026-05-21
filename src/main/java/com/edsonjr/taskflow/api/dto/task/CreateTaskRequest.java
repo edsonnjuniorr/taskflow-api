@@ -18,6 +18,7 @@ public record CreateTaskRequest(
         @NotNull(message = "User id is required.")
         UUID userId,
 
+        @NotNull(message = "Status is required.")
         TaskStatus status
 ) {
 }

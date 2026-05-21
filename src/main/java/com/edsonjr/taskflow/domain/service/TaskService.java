@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -45,6 +46,8 @@ public class TaskService {
 
     @Transactional
     public Task create(String title, String description, UUID userId, TaskStatus status) {
+        Objects.requireNonNull(status, "status is required");
+
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> {
                     LOGGER.debug("Task creation rejected because user was not found. userId={}", userId);
@@ -81,6 +84,8 @@ public class TaskService {
 
     @Transactional
     public Task updateStatus(UUID taskId, TaskStatus status) {
+        Objects.requireNonNull(status, "status is required");
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> {
                     LOGGER.debug("Task status update rejected because task was not found. taskId={}", taskId);

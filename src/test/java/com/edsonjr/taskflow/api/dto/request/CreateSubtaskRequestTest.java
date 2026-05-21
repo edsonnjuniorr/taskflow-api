@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
+import static com.edsonjr.taskflow.domain.model.TaskStatus.COMPLETED;
 import static com.edsonjr.taskflow.domain.model.TaskStatus.IN_PROGRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,7 +51,7 @@ class CreateSubtaskRequestTest {
         CreateSubtaskRequest request = new CreateSubtaskRequest(
                 " ",
                 "Cover subtask endpoints",
-                null
+                IN_PROGRESS
         );
 
         Set<ConstraintViolation<CreateSubtaskRequest>> violations = validator.validate(request);
@@ -61,11 +62,26 @@ class CreateSubtaskRequestTest {
     }
 
     @Test
+    void shouldRequireStatus() {
+        CreateSubtaskRequest request = new CreateSubtaskRequest(
+                "Write controller tests",
+                "Cover subtask endpoints",
+                null
+        );
+
+        Set<ConstraintViolation<CreateSubtaskRequest>> violations = validator.validate(request);
+
+        assertThat(violations)
+                .anyMatch(violation -> violation.getPropertyPath().toString().equals("status")
+                        && violation.getMessage().equals("Status is required."));
+    }
+
+    @Test
     void shouldLimitTitleLength() {
         CreateSubtaskRequest request = new CreateSubtaskRequest(
                 "a".repeat(161),
                 "Cover subtask endpoints",
-                null
+                COMPLETED
         );
 
         Set<ConstraintViolation<CreateSubtaskRequest>> violations = validator.validate(request);
@@ -80,7 +96,7 @@ class CreateSubtaskRequestTest {
         CreateSubtaskRequest request = new CreateSubtaskRequest(
                 "Write controller tests",
                 "a".repeat(1001),
-                null
+                COMPLETED
         );
 
         Set<ConstraintViolation<CreateSubtaskRequest>> violations = validator.validate(request);

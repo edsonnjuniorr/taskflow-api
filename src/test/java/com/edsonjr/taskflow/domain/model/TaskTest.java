@@ -11,7 +11,7 @@ class TaskTest {
     void shouldCreateTaskWithRequiredFields() {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
 
-        Task task = Task.create("Create API", "Build domain model", user);
+        Task task = Task.create("Create API", "Build domain model", TaskStatus.PENDING, user);
 
         assertThat(task.getId()).isNull();
         assertThat(task.getTitle()).isEqualTo("Create API");
@@ -26,7 +26,7 @@ class TaskTest {
     void shouldTrimTitleAndDescription() {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
 
-        Task task = Task.create("  Create API  ", "  Build domain model  ", user);
+        Task task = Task.create("  Create API  ", "  Build domain model  ", TaskStatus.PENDING, user);
 
         assertThat(task.getTitle()).isEqualTo("Create API");
         assertThat(task.getDescription()).isEqualTo("Build domain model");
@@ -36,7 +36,7 @@ class TaskTest {
     void shouldCreateTaskWithNullDescription() {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
 
-        Task task = Task.create("Create API", null, user);
+        Task task = Task.create("Create API", null, TaskStatus.PENDING, user);
 
         assertThat(task.getDescription()).isNull();
     }
@@ -45,7 +45,7 @@ class TaskTest {
     void shouldCreateTaskWithBlankDescriptionAsNull() {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
 
-        Task task = Task.create("Create API", "   ", user);
+        Task task = Task.create("Create API", "   ", TaskStatus.PENDING, user);
 
         assertThat(task.getDescription()).isNull();
     }
@@ -54,7 +54,7 @@ class TaskTest {
     void shouldFailWhenTitleIsNull() {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
 
-        assertThatThrownBy(() -> Task.create(null, "Description", user))
+        assertThatThrownBy(() -> Task.create(null, "Description", TaskStatus.PENDING, user))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("title is required");
     }
@@ -63,32 +63,31 @@ class TaskTest {
     void shouldFailWhenTitleIsBlank() {
         AppUser user = AppUser.create("John Doe", "john.doe@example.com");
 
-        assertThatThrownBy(() -> Task.create("   ", "Description", user))
+        assertThatThrownBy(() -> Task.create("   ", "Description", TaskStatus.PENDING, user))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("title must not be blank");
     }
 
     @Test
     void shouldFailWhenUserIsNull() {
-        assertThatThrownBy(() -> Task.create("Create API", "Description", null))
+        assertThatThrownBy(() -> Task.create("Create API", "Description", TaskStatus.PENDING, null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("user is required");
     }
 
     @Test
-    void shouldCreateTaskWithPendingStatusWhenStatusIsNull() {
+    void shouldFailWhenStatusIsNull() {
         AppUser user = AppUser.create("Edson", "edson@example.com");
 
-        Task task = Task.create("Implement task module", null, null, user);
-
-        assertThat(task.getStatus()).isEqualTo(TaskStatus.PENDING);
-        assertThat(task.getCompletedAt()).isNull();
+        assertThatThrownBy(() -> Task.create("Implement task module", null, null, user))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("status is required");
     }
 
     @Test
     void shouldSetCompletionDateWhenStatusIsUpdatedToCompleted() {
         AppUser user = AppUser.create("Edson", "edson@example.com");
-        Task task = Task.create("Implement task module", null, user);
+        Task task = Task.create("Implement task module", null, TaskStatus.PENDING, user);
 
         task.updateStatus(TaskStatus.COMPLETED);
 
@@ -123,7 +122,7 @@ class TaskTest {
     @Test
     void shouldFailWhenUpdatedStatusIsNull() {
         AppUser user = AppUser.create("Edson", "edson@example.com");
-        Task task = Task.create("Implement task module", null, user);
+        Task task = Task.create("Implement task module", null, TaskStatus.PENDING, user);
 
         assertThatThrownBy(() -> task.updateStatus(null))
                 .isInstanceOf(NullPointerException.class)

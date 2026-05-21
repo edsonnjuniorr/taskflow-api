@@ -109,7 +109,8 @@ class TaskFlowEndToEndTest {
                                 {
                                   "title": "Deliver challenge",
                                   "description": "Finish backend implementation",
-                                  "userId": "%s"
+                                  "userId": "%s",
+                                  "status": "PENDING"
                                 }
                                 """.formatted(userId)))
                 .andExpect(status().isCreated())
@@ -125,7 +126,8 @@ class TaskFlowEndToEndTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "title": "Write integration tests"
+                                  "title": "Write integration tests",
+                                  "status": "PENDING"
                                 }
                                 """))
                 .andExpect(status().isCreated())

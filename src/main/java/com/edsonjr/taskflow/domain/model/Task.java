@@ -52,14 +52,10 @@ public class Task {
     private Task(String title, String description, TaskStatus status, AppUser user) {
         this.title = requireNonBlank(title);
         this.description = normalizeOptionalText(description);
-        this.status = resolveStatus(status);
+        this.status = Objects.requireNonNull(status, "status is required");
         this.createdAt = Instant.now();
         this.completedAt = resolveCompletedAt(this.status, null);
         this.user = Objects.requireNonNull(user, "user is required");
-    }
-
-    public static Task create(String title, String description, AppUser user) {
-        return new Task(title, description, TaskStatus.PENDING, user);
     }
 
     public static Task create(String title, String description, TaskStatus status, AppUser user) {
@@ -99,14 +95,6 @@ public class Task {
         return user;
     }
 
-    private static TaskStatus resolveStatus(TaskStatus status) {
-        if (status == null) {
-            return TaskStatus.PENDING;
-        }
-
-        return status;
-    }
-
     private static Instant resolveCompletedAt(TaskStatus status, Instant currentCompletedAt) {
         if (status == TaskStatus.COMPLETED) {
             return currentCompletedAt != null ? currentCompletedAt : Instant.now();
@@ -116,7 +104,7 @@ public class Task {
     }
 
     private static String requireNonBlank(String value) {
-        Objects.requireNonNull(value, "title" + " is required");
+        Objects.requireNonNull(value, "title is required");
 
         String normalizedValue = value.trim();
 

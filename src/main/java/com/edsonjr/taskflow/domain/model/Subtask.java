@@ -51,13 +51,9 @@ public class Subtask {
         this.task = Objects.requireNonNull(task, "task is required");
         this.title = requireNonBlank(title);
         this.description = normalizeDescription(description);
-        this.status = status == null ? TaskStatus.PENDING : status;
+        this.status = Objects.requireNonNull(status, "status is required");
         this.createdAt = Instant.now();
         this.completedAt = resolveCompletedAt(this.status, null);
-    }
-
-    public static Subtask create(Task task, String title, String description) {
-        return create(task, title, description, null);
     }
 
     public static Subtask create(Task task, String title, String description, TaskStatus status) {

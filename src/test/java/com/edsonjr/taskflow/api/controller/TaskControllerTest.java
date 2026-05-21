@@ -99,7 +99,8 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.fields").isArray())
                 .andExpect(jsonPath("$.fields[*].field").value(hasItem("title")))
-                .andExpect(jsonPath("$.fields[*].field").value(hasItem("userId")));
+                .andExpect(jsonPath("$.fields[*].field").value(hasItem("userId")))
+                .andExpect(jsonPath("$.fields[*].field").value(hasItem("status")));
 
         verifyNoInteractions(taskService);
     }

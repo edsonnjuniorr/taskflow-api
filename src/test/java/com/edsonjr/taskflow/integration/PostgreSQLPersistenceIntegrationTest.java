@@ -47,10 +47,10 @@ class PostgreSQLPersistenceIntegrationTest extends PostgreSQLIntegrationTest {
         AppUser user = AppUser.create("John Doe", "john.doe.postgres@example.com");
         entityManager.persist(user);
 
-        Task task = Task.create("Create API", "Validate PostgreSQL mapping", user);
+        Task task = Task.create("Create API", "Validate PostgreSQL mapping", PENDING, user);
         entityManager.persist(task);
 
-        Subtask subtask = Subtask.create(task, "Create entities", "Validate JPA entities");
+        Subtask subtask = Subtask.create(task, "Create entities", "Validate JPA entities", PENDING);
         entityManager.persist(subtask);
 
         entityManager.flush();

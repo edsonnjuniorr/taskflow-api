@@ -48,7 +48,7 @@ class TaskServiceTest {
     }
 
     @Test
-    void shouldCreateTaskWithPendingStatusWhenStatusIsNotProvided() {
+    void shouldCreateTaskWithProvidedStatus() {
         AppUser user = AppUser.create("Edson", "edson@example.com");
 
         when(appUserRepository.findById(user.getId())).thenReturn(Optional.of(user));
@@ -58,7 +58,7 @@ class TaskServiceTest {
                 "Implement task creation",
                 "Create POST /tarefas endpoint",
                 user.getId(),
-                null
+                PENDING
         );
 
         ArgumentCaptor<Task> taskCaptor = ArgumentCaptor.forClass(Task.class);
@@ -74,6 +74,22 @@ class TaskServiceTest {
         assertThat(savedTask.getCreatedAt()).isNotNull();
         assertThat(savedTask.getCompletedAt()).isNull();
         assertThat(savedTask.getUser()).isEqualTo(user);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingTaskWithoutStatus() {
+        UUID userId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> taskService.create(
+                "Implement task creation",
+                "Create POST /tarefas endpoint",
+                userId,
+                null
+        ))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("status is required");
+
+        verifyNoInteractions(appUserRepository, taskRepository, subtaskRepository);
     }
 
     @Test

@@ -40,7 +40,7 @@ class SubtaskServiceTest {
     private SubtaskService subtaskService;
 
     @Test
-    void shouldCreateSubtaskWithDefaultStatusWhenStatusIsNotProvided() {
+    void shouldCreateSubtaskWithPendingStatus() {
         UUID taskId = UUID.randomUUID();
         Task task = createTask();
 
@@ -51,7 +51,7 @@ class SubtaskServiceTest {
                 taskId,
                 "Create unit tests",
                 "Cover service behavior",
-                null
+                TaskStatus.PENDING
         );
 
         assertThat(subtask.getTitle()).isEqualTo("Create unit tests");
@@ -63,6 +63,22 @@ class SubtaskServiceTest {
 
         verify(taskRepository).findById(taskId);
         verify(subtaskRepository).save(any(Subtask.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingSubtaskWithoutStatus() {
+        UUID taskId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> subtaskService.create(
+                taskId,
+                "Create tests",
+                "Description",
+                null
+        ))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("status is required");
+
+        verifyNoInteractions(taskRepository, subtaskRepository);
     }
 
     @Test
@@ -150,26 +166,6 @@ class SubtaskServiceTest {
     }
 
     @Test
-    void shouldThrowBusinessExceptionWhenCreatingSubtaskWithoutStatusForCompletedTask() {
-        UUID taskId = UUID.randomUUID();
-        Task task = createCompletedTask();
-
-        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
-
-        assertThatThrownBy(() -> subtaskService.create(
-                taskId,
-                "Create tests",
-                "Description",
-                null
-        ))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage("Cannot create unfinished subtask for a completed task.");
-
-        verify(taskRepository).findById(taskId);
-        verify(subtaskRepository, never()).save(any());
-    }
-
-    @Test
     void shouldCreateCompletedSubtaskForCompletedTask() {
         UUID taskId = UUID.randomUUID();
         Task task = createCompletedTask();
@@ -196,8 +192,8 @@ class SubtaskServiceTest {
         UUID taskId = UUID.randomUUID();
         Task task = createTask();
 
-        Subtask firstSubtask = Subtask.create(task, "First subtask", null);
-        Subtask secondSubtask = Subtask.create(task, "Second subtask", null);
+        Subtask firstSubtask = Subtask.create(task, "First subtask", null, TaskStatus.PENDING);
+        Subtask secondSubtask = Subtask.create(task, "Second subtask", null, TaskStatus.PENDING);
         PageRequest pageable = PageRequest.of(0, 20);
 
         when(taskRepository.existsById(taskId)).thenReturn(true);
@@ -233,7 +229,7 @@ class SubtaskServiceTest {
     void shouldUpdateSubtaskStatus() {
         UUID subtaskId = UUID.randomUUID();
         Task task = createTask();
-        Subtask subtask = Subtask.create(task, "Create tests", null);
+        Subtask subtask = Subtask.create(task, "Create tests", null, TaskStatus.PENDING);
 
         when(subtaskRepository.findByIdWithTask(subtaskId)).thenReturn(Optional.of(subtask));
         when(subtaskRepository.save(any(Subtask.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -249,6 +245,17 @@ class SubtaskServiceTest {
         verify(subtaskRepository).save(subtaskCaptor.capture());
 
         assertThat(subtaskCaptor.getValue().getStatus()).isEqualTo(TaskStatus.COMPLETED);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingSubtaskWithoutStatus() {
+        UUID subtaskId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> subtaskService.updateStatus(subtaskId, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("status is required");
+
+        verifyNoInteractions(subtaskRepository, taskRepository);
     }
 
     @Test
@@ -308,6 +315,7 @@ class SubtaskServiceTest {
         return Task.create(
                 "Main task",
                 "Main task description",
+                TaskStatus.PENDING,
                 user
         );
     }
